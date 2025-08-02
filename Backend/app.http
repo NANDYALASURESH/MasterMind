@@ -1,5 +1,5 @@
 ### 📝 Register a New User
-POST http://localhost:3000/users
+POST https://mastermind-0ex7.onrender.com/users
 Content-Type: application/json
 
 {
@@ -10,7 +10,7 @@ Content-Type: application/json
 }
 
 ### 🔐 Login User
-POST http://localhost:3000/login
+POST https://mastermind-0ex7.onrender.com/login
 Content-Type: application/json
 
 {
@@ -18,12 +18,44 @@ Content-Type: application/json
   "password": "Secret123!"
 }
 ######
-POST http://localhost:3000/saved-courses
+POST https://mastermind-0ex7.onrender.com/saved-courses
 Content-Type: application/json
 Authorization: Bearer 
 
 {
-  "course_id": 1
+  "course_id": "PASTE_A_MONGO_COURSE_ID_HERE" 
 }
+############
+GET https://mastermind-0ex7.onrender.com/courses
 
+#############
+### Get all courses
+GET https://mastermind-0ex7.onrender.com/courses
+Accept: application/json
 
+### Get a specific course by ID
+### Get all courses with Origin
+GET https://mastermind-0ex7.onrender.com/courses
+Origin: http://localhost:5173
+
+#########
+GET https://mastermind-0ex7.onrender.com/courses
+Accept: application/json
+########
+GET https://mastermind-0ex7.onrender.com/courses
+
+#############
+POST http://localhost:3000/courses
+Content-Type: application/json
+
+{
+  "title": "Learn Node.js",
+  "category": "Programming",
+  "instructor": "Jane Doe",
+  "rating": 4.7,
+  "price": 49.99,
+  "image": "https://example.com/image.jpg",
+  "description": "Great Node.js course"
+}
+############
+GET https://mastermind-0ex7.onrender.com/courses
