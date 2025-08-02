@@ -136,7 +136,7 @@ const LoginSignup = () => {
     try {
       if (isLogin) {
         const res = await axios.post(
-          'http://localhost:3000/login',
+          'https://mastermind-0ex7.onrender.com/login',
           { 
             username: formData.username, 
             password: formData.password 
@@ -158,7 +158,7 @@ const LoginSignup = () => {
           setError(res.data.message || 'Login failed');
         }
       } else {
-        const response = await axios.post('http://localhost:3000/users', {
+        const response = await axios.post('https://mastermind-0ex7.onrender.com/users', {
           username: formData.username,
           name: formData.name,
           email: formData.email,
@@ -195,7 +195,7 @@ const LoginSignup = () => {
     setError('');
 
     try {
-      const res = await axios.post('http://localhost:3000/verify-otp', {
+      const res = await axios.post('https://mastermind-0ex7.onrender.com/verify-otp', {
         otpKey: otpData.otpKey,
         otp: otpString
       });
@@ -219,7 +219,7 @@ const LoginSignup = () => {
     setError('');
 
     try {
-      const res = await axios.post('http://localhost:3000/resend-otp', {
+      const res = await axios.post('https://mastermind-0ex7.onrender.com/resend-otp', {
         otpKey: otpData.otpKey
       });
 

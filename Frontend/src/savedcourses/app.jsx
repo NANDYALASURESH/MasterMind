@@ -26,7 +26,7 @@ const SavedCourses = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch('http://localhost:3000/saved-courses', {
+        const res = await fetch('https://mastermind-0ex7.onrender.com/saved-courses', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -59,7 +59,7 @@ const SavedCourses = () => {
     }
 
     try {
-      const res = await fetch('http://localhost:3000/saved-courses', {
+      const res = await fetch('https://mastermind-0ex7.onrender.com/saved-courses', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

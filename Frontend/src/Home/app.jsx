@@ -40,7 +40,7 @@ const LearningPlatform = () => {
       if (!token) return;
 
       try {
-        const res = await fetch('http://localhost:3000/profile', {
+        const res = await fetch('https://mastermind-0ex7.onrender.com/profile', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -64,11 +64,12 @@ const LearningPlatform = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch('http://localhost:3000/courses');
+        const res = await fetch('https://mastermind-0ex7.onrender.com/courses');
         if (!res.ok) throw new Error('Failed to fetch');
         const data = await res.json();
         // Backend returns an array directly
         const coursesArr = Array.isArray(data) ? data : [];
+        console.log(coursesArr)
         setCourses(coursesArr);
         setFilteredCourses(coursesArr);
         // Extract unique platforms from fetched data
@@ -92,7 +93,7 @@ const LearningPlatform = () => {
       const token = Cookies.get('jwt_token');
       if (!token) return;
       try {
-        const res = await fetch('http://localhost:3000/saved-courses', {
+        const res = await fetch('https://mastermind-0ex7.onrender.com/saved-courses', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -238,7 +239,7 @@ const LearningPlatform = () => {
     if (savedCourses.includes(courseId)) {
       // Unsave (DELETE)
       try {
-        const res = await fetch('http://localhost:3000/saved-courses', {
+        const res = await fetch('https://mastermind-0ex7.onrender.com/saved-courses', {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -259,7 +260,7 @@ const LearningPlatform = () => {
     } else {
       // Save (POST)
       try {
-        const res = await fetch('http://localhost:3000/saved-courses', {
+        const res = await fetch('https://mastermind-0ex7.onrender.com/saved-courses', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
