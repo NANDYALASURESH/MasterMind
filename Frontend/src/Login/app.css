@@ -1,0 +1,11 @@
+/* Modern and polished design for MasterLearn login/signup component */
+
+/* Base styles and container */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  width: 100vw;
+  padding: 0;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+

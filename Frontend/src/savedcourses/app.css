@@ -1,0 +1,442 @@
+/* MasterMind Saved Courses Styles */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: #f8fafc;
+  color: #334155;
+  line-height: 1.6;
+}
+
+/* Container */
+.saved-courses-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center; /* Vertically center items */
+  justify-content: space-between; /* Distribute items: left, center, right */
+  gap: 15px; /* Spacing between items, though space-between will dominate */
+  margin-bottom: 20px;
+  /* Removed position: relative; if back-button is not absolute anymore */
+}
+
+.back-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  /* Removed position: absolute; and left: 0; */
+}
+
+.back-button:hover {
+  background-color: #f0f0f0;
+}
+
+.header h1 {
+  margin: 0; /* Remove default margin */
+  flex-grow: 1; /* Allow h1 to take up available space */
+  text-align: center; /* Center the text within the h1's flexible space */
+}
+
+.course-count {
+  /* No need for margin-left: auto with justify-content: space-between */
+  color: #666;
+  font-size: 1em;
+}
+
+/* Loading State */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #6366f1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-state p {
+  color: #64748b;
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  text-align: center;
+}
+
+/* Error State */
+.error-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.error-state p {
+  color: #dc2626;
+  font-size: 1.1rem;
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  text-align: center;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  padding: 3rem;
+}
+
+.empty-icon {
+  color: #d1d5db;
+  margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+  color: #6b7280;
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  text-align: center;
+}
+
+.saved-courses-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Force 2 columns for testing */
+  gap: 24px;
+  /* Removed padding: 20px; */
+}
+
+/* Adjustments for responsiveness */
+@media (max-width: 1024px) {
+  .saved-courses-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .saved-courses-grid {
+    grid-template-columns: 1fr;
+    padding: 15px;
+  }
+
+  .saved-course-card {
+    flex-direction: column;
+  }
+
+  .saved-course-image-container {
+    height: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .saved-courses-container {
+    padding: 10px;
+  }
+
+  .header h1 {
+    font-size: 24px;
+  }
+
+  .saved-courses-grid {
+    gap: 15px;
+  }
+
+  .saved-course-card {
+    flex-direction: column;
+  }
+}
+
+/* Course Card */
+.saved-course-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  border: 1px solid #e2e8f0;
+}
+
+.saved-course-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Course Image Container */
+.saved-course-image-container {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+}
+
+.saved-course-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.saved-course-card:hover .saved-course-image {
+  transform: scale(1.05);
+}
+
+/* Heart Button */
+.heart-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #6b7280;
+  backdrop-filter: blur(4px);
+}
+
+.heart-button:hover {
+  background: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+}
+
+.heart-button.saved {
+  color: #dc2626;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.heart-button.saved:hover {
+  color: #991b1b;
+}
+
+/* Level Badge */
+.level-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.level-beginner {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.level-intermediate {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.level-advanced {
+  background-color: #fecaca;
+  color: #991b1b;
+}
+
+/* Course Content */
+.saved-course-content {
+  padding: 1.5rem;
+}
+
+.saved-course-header {
+  margin-bottom: 1rem;
+}
+
+.saved-course-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.saved-course-instructor {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin: 0;
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  text-align: left;
+}
+
+.saved-course-description {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+  background: none;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+  text-align: left;
+}
+
+/* Course Stats */
+.saved-course-stats {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.stat svg {
+  color: #94a3b8;
+}
+
+/* Course Footer */
+.saved-course-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px; /* Space between the two buttons */
+}
+
+.price {
+  font-weight: 600;
+}
+
+.price-text {
+  color: #059669;
+  font-size: 1rem;
+}
+
+/* Enroll Button */
+.enroll-button {
+  background: #6366f1;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.enroll-button:hover {
+  background: #4f46e5;
+  transform: translateY(-1px);
+}
+
+.enroll-button:active {
+  transform: translateY(0);
+}
+
+.remove-from-saved-button {
+  background-color: #ef4444; /* Red color for remove action */
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap; /* Prevent text wrapping */
+}
+
+.remove-from-saved-button:hover {
+  background-color: #dc2626;
+  transform: translateY(-1px);
+}
+
+.remove-from-saved-button:active {
+  transform: translateY(0);
+}
+
+/* Animation for course cards */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.course-card {
+  animation: fadeInUp 0.5s ease;
+}
+
+.course-card:nth-child(1) { animation-delay: 0s; }
+.course-card:nth-child(2) { animation-delay: 0.1s; }
+.course-card:nth-child(3) { animation-delay: 0.2s; }
+.course-card:nth-child(4) { animation-delay: 0.3s; }
+.course-card:nth-child(5) { animation-delay: 0.4s; }
+.course-card:nth-child(6) { animation-delay: 0.5s; }

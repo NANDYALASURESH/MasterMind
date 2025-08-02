@@ -1,0 +1,193 @@
+/* welcome.css - Styles for the MasterLearn Welcome Component */
+
+/* Base container styles */
+.welcome-container {
+    min-height: 100vh;
+    min-width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: linear-gradient(to bottom right, #eef2ff, #dbeafe);
+  }
+  
+  /* Main card wrapper */
+  .welcome-card {
+    max-width:100%;
+    width: 100%;
+    background-color: white;
+    border-radius: 1rem;
+    overflow: hidden;
+    height: 900px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Media query for desktop layout */
+  @media (min-width: 768px) {
+    .welcome-card {
+      flex-direction: row;
+    }
+  }
+  
+  /* Left sidebar */
+  .welcome-sidebar {
+    background-color: #2563eb;
+    color: white;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  @media (min-width: 768px) {
+    .welcome-sidebar {
+      width: 40%;
+    }
+  }
+  
+  /* Sidebar text */
+  .welcome-sidebar-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+  
+  .welcome-sidebar-text {
+    color: #bfdbfe;
+    margin-bottom: 2rem;
+  }
+  
+  /* Sidebar image container */
+  .welcome-sidebar-image {
+    display: none;
+  }
+  
+  @media (min-width: 768px) {
+    .welcome-sidebar-image {
+      display: block;
+    }
+  }
+  
+  /* Sidebar image */
+  .welcome-sidebar-image img {
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  /* Main content section */
+  .welcome-content {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  @media (min-width: 768px) {
+    .welcome-content {
+      width: 100%;
+    }
+  }
+  
+  /* Logo */
+  .welcome-logo {
+    height: 3rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Welcome headings */
+  .welcome-heading {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.75rem;
+  }
+  
+  .welcome-subheading {
+    font-size: 1.25rem;
+    color: #4b5563;
+    font-weight: 500;
+    margin-bottom: 2rem;
+  }
+  
+  /* Stats container */
+  .welcome-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  /* Individual stat box */
+  .welcome-stat-box {
+    background-color: #eff6ff;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    flex: 1;
+    min-width: 140px;
+  }
+  
+  .welcome-stat-box.courses {
+    background-color: #eff6ff;
+  }
+  
+  .welcome-stat-box.tutors {
+    background-color: #eef2ff;
+  }
+  
+  .welcome-stat-box.support {
+    background-color: #f5f3ff;
+  }
+  
+  /* Stat numbers */
+  .welcome-stat-number {
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+  
+  .welcome-stat-number.courses {
+    color: #2563eb;
+  }
+  
+  .welcome-stat-number.tutors {
+    color: #4f46e5;
+  }
+  
+  .welcome-stat-number.support {
+    color: #7c3aed;
+  }
+  
+  /* Stat labels */
+  .welcome-stat-label {
+    color: #4b5563;
+  }
+  
+  /* Button styles */
+  .welcome-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background-color: #2563eb;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-size: 1.125rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .welcome-button:hover {
+    background-color: #1d4ed8;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  /* Button icon */
+  .welcome-button svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
