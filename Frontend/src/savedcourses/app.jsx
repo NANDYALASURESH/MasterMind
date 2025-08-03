@@ -7,7 +7,6 @@ const SavedCourses = () => {
   const [savedCourses, setSavedCourses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [token, setToken] = useState(() => localStorage.getItem('token') || ''); // Initialize token from localStorage
   const [removingCourse, setRemovingCourse] = useState(null);
 
   // Demo data for testing the UI
@@ -84,13 +83,6 @@ const SavedCourses = () => {
   // }];
 
   const fetchSavedCourses = async () => {
-    if (!token) {
-      setLoading(false);
-      setError('Please enter your JWT token to connect to the backend.');
-      setSavedCourses([]);
-      return;
-    }
-
     setLoading(true);
     setError(null);
 
@@ -98,7 +90,6 @@ const SavedCourses = () => {
       const res = await fetch('https://mastermind-2.onrender.com/saved-courses', {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
@@ -129,14 +120,9 @@ const SavedCourses = () => {
 
   useEffect(() => {
     fetchSavedCourses();
-  }, [token]); // Add token as a dependency
+  }, []); // Remove token as a dependency
 
   const handleRemoveCourse = async (courseId) => {
-    if (!token) {
-      setError('Please connect to the backend to remove courses.');
-      return;
-    }
-
     setRemovingCourse(courseId);
     setError(null);
 
@@ -145,7 +131,6 @@ const SavedCourses = () => {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ course_id: courseId }),
       });
@@ -222,24 +207,6 @@ const SavedCourses = () => {
     fetchSavedCourses();
   };
 
-  const handleTokenChange = (e) => {
-    setToken(e.target.value);
-  };
-
-  const handleConnectBackend = () => {
-    if (token) {
-      localStorage.setItem('token', token); // Save token to localStorage
-      fetchSavedCourses();
-    }
-  };
-
-  const handleClearToken = () => {
-    setToken('');
-    localStorage.removeItem('token'); // Remove token from localStorage
-    setSavedCourses([]);
-    setError(null);
-  };
-
   if (loading) {
     return (
       <div className="loading-container">
@@ -282,35 +249,6 @@ const SavedCourses = () => {
                 <span className="course-counter-text">{savedCourses.length}</span>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Backend Connection Panel */}
-      <div className="connection-panel">
-        <div className="connection-card">
-          <h3 className="connection-title">Backend Connection</h3>
-          <div className="connection-form">
-            <input
-              type="text"
-              placeholder="Enter your JWT token to connect to backend"
-              value={token}
-              onChange={handleTokenChange}
-              className="token-input"
-            />
-            <button
-              onClick={handleConnectBackend}
-              className="connect-button"
-              disabled={!token}
-            >
-              Connect
-            </button>
-            <button
-              onClick={handleClearToken}
-              className="connect-button"
-            >
-              Clear Token
-            </button>
           </div>
         </div>
       </div>
