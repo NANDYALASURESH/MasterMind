@@ -36,26 +36,34 @@ const LearningPlatform = () => {
   const [savedCourses, setSavedCourses] = useState([]);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      const token = Cookies.get('jwt_token');
-      if (!token) return;
+      const fetchProfile = async () => {
+    const token = Cookies.get('jwt_token');
+    if (!token) {
+      console.log('No JWT token found');
+      return;
+    }
 
-      try {
-        const res = await fetch('https://mastermind-2.onrender.com/profile', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.user);
-        } else {
-          setUser(null);
-        }
-      } catch (err) {
+    console.log('Fetching profile with token:', token.substring(0, 20) + '...');
+
+    try {
+      const res = await fetch('https://mastermind-2.onrender.com/profile', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        console.log('Profile fetched successfully:', data);
+        setUser(data.user);
+      } else {
+        console.log('Failed to fetch profile, status:', res.status);
         setUser(null);
       }
-    };
+    } catch (err) {
+      console.error('Error fetching profile:', err);
+      setUser(null);
+    }
+  };
 
     fetchProfile();
   }, []);
@@ -494,7 +502,8 @@ const LearningPlatform = () => {
               gap: '16px',
               flexShrink: 0,
               '@media (max-width: 768px)': {
-                gap: '12px'
+                gap: '12px',
+                order: 2
               }
             }} className="right-section">
               {/* Notifications */}
@@ -609,8 +618,83 @@ const LearningPlatform = () => {
                 )}
               </button>
 
+              {/* Debug Button for Mobile */}
+              {isMobile && (
+                <button
+                  onClick={() => {
+                    console.log('Debug button clicked');
+                    alert(`User: ${user ? 'Logged in' : 'Not logged in'}, Mobile: ${isMobile}`);
+                  }}
+                  style={{
+                    padding: '8px 12px',
+                    backgroundColor: '#ef4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    marginRight: '8px'
+                  }}
+                >
+                  Debug
+                </button>
+              )}
+
+              {/* Test User Button for Mobile */}
+              {isMobile && (
+                <button
+                  onClick={() => {
+                    console.log('Test user button clicked');
+                    setUser({
+                      username: 'TestUser',
+                      name: 'Test User',
+                      avatar: 'https://ui-avatars.com/api/?name=Test+User'
+                    });
+                  }}
+                  style={{
+                    padding: '8px 12px',
+                    backgroundColor: '#10b981',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    marginRight: '8px'
+                  }}
+                >
+                  Test User
+                </button>
+              )}
+
+              {/* Debug Link for Mobile */}
+              {isMobile && (
+                <a
+                  href="/debug"
+                  style={{
+                    padding: '8px 12px',
+                    backgroundColor: '#8b5cf6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    marginRight: '8px',
+                    textDecoration: 'none',
+                    display: 'inline-block'
+                  }}
+                >
+                  Debug
+                </a>
+              )}
+
               {/* User Profile Dropdown */}
-              <div style={{ position: 'relative' }} ref={userMenuRef}>
+              <div style={{ 
+                position: 'relative',
+                ...(isMobile && {
+                  border: '2px solid #10b981',
+                  padding: '4px',
+                  borderRadius: '8px',
+                  backgroundColor: '#f0fdf4'
+                })
+              }} ref={userMenuRef}>
+                {console.log('Rendering profile section, user:', user, 'isMobile:', isMobile)}
                 {user ? (
                   <button
                     onClick={() => {
@@ -632,7 +716,14 @@ const LearningPlatform = () => {
                       backgroundColor: showUserMenu ? '#f1f5f9' : 'transparent',
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
-                      WebkitTapHighlightColor: 'transparent'
+                      WebkitTapHighlightColor: 'transparent',
+                      ...(isMobile && {
+                        border: '3px solid #ef4444',
+                        backgroundColor: '#fef2f2',
+                        padding: '12px',
+                        minWidth: '60px',
+                        minHeight: '60px'
+                      })
                     }}
                   >
                     <img
@@ -646,27 +737,50 @@ const LearningPlatform = () => {
                         border: '2px solid #e2e8f0'
                       }}
                     />
-                    <ChevronDown
-                      size={16}
-                      color="#64748b"
-                      style={{
-                        transform: showUserMenu ? 'rotate(180deg)' : 'rotate(0deg)',
-                        transition: 'transform 0.2s ease'
-                      }}
-                    />
+                    {!isMobile && (
+                      <ChevronDown
+                        size={16}
+                        color="#64748b"
+                        style={{
+                          transform: showUserMenu ? 'rotate(180deg)' : 'rotate(0deg)',
+                          transition: 'transform 0.2s ease'
+                        }}
+                      />
+                    )}
+                    {isMobile && (
+                      <span style={{
+                        fontSize: '12px',
+                        color: '#ef4444',
+                        fontWeight: 'bold'
+                      }}>
+                        Profile
+                      </span>
+                    )}
                   </button>
                 ) : (
-                  <div style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '50%',
-                    background: '#e2e8f0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}>
+                  <button
+                    onClick={() => {
+                      console.log('Fallback profile button clicked');
+                      alert('No user logged in');
+                    }}
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '50%',
+                      background: '#e2e8f0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: 'none',
+                      cursor: 'pointer',
+                      ...(isMobile && {
+                        border: '2px solid #ef4444',
+                        background: '#fef2f2'
+                      })
+                    }}
+                  >
                     <User size={20} color="#64748b" />
-                  </div>
+                  </button>
                 )}
 
                 {/* User Dropdown Menu */}

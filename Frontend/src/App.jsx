@@ -6,6 +6,7 @@ import LoginSignup from "./Login/app";
 import SavedCourses from "./savedcourses/app"
 import ProtectedRoute from "./ProtectedRoute/app";
 import PublicRoute from "./PublicRoute/app"; // new
+import DebugComponent from "./Home/debug";
 
 import "./App.css";
 
@@ -35,6 +36,12 @@ const App = () => (
           <ProtectedRoute>
             <SavedCourses/>
           </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/debug"
+        element={
+          <DebugComponent />
         }
       />
     </Routes>
