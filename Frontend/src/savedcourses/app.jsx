@@ -26,8 +26,8 @@ const SavedCourses = () => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`, // Add Authorization header
         },
+        credentials: 'include', // Include cookies with the request
       });
 
       if (!res.ok) {
@@ -74,9 +74,9 @@ const SavedCourses = () => {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`, // Add Authorization header
         },
         body: JSON.stringify({ course_id: courseId }),
+        credentials: 'include', // Include cookies with the request
       });
 
       if (!res.ok) {

@@ -265,13 +265,20 @@ app.post("/verify-otp", async (req, res) => {
       "MY_SECRET_TOKEN"
     );
 
+    // Set JWT as an HttpOnly cookie
+    res.cookie('jwt_token', jwtToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Use secure in production (HTTPS)
+      sameSite: 'Lax', // Adjust based on your SameSite policy needs
+      maxAge: 3600000 // 1 hour expiration for the cookie (adjust as needed)
+    });
+
     // Clean up OTP
     otpStore.delete(otpKey);
 
     return res.json({
       success: true,
       message: "Login successful",
-      jwtToken
     });
 
   } catch (err) {
@@ -328,11 +335,10 @@ app.post("/resend-otp", async (req, res) => {
 
 // Middleware to authenticate and extract user from JWT
 function authenticateToken(req, res, next) {
-  const authHeader = req.headers["authorization"];
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "No token provided" });
+  const token = req.cookies.jwt_token; // Get token from HttpOnly cookie
+  if (!token) {
+    return res.status(401).json({ message: "Authentication token missing." });
   }
-  const token = authHeader.split(" ")[1];
   try {
     const decoded = jwt.verify(token, "MY_SECRET_TOKEN");
     req.user = decoded;
@@ -399,13 +405,11 @@ app.get('/saved-courses', authenticateToken, async (req, res) => {
 
 
 app.get('/profile', (req, res) => {
-  const authHeader = req.headers.authorization;
+  const token = req.cookies.jwt_token; // Get token from HttpOnly cookie
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'No token provided' });
+  if (!token) {
+    return res.status(401).json({ message: 'Authentication token missing.' });
   }
-
-  const token = authHeader.split(' ')[1];
 
   try {
     const decoded = jwt.verify(token, 'MY_SECRET_TOKEN'); // use the same secret as in /login
