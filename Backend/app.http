@@ -45,7 +45,7 @@ Accept: application/json
 GET https://mastermind-0ex7.onrender.com/courses
 
 #############
-POST http://localhost:3000/courses
+POST https://mastermind-2.onrender.com/courses
 Content-Type: application/json
 
 {
@@ -58,4 +58,4 @@ Content-Type: application/json
   "description": "Great Node.js course"
 }
 ############
-GET https://mastermind-0ex7.onrender.com/courses
+GET https://mastermind-2.onrender.com/courses

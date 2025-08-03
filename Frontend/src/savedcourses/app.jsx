@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ThreeDotsLoader from "../loader/app"; // adjust path if neede
-import "../app.css"
+import './app.css';
 import { Heart, Clock, Star, Users, ArrowLeft, BookOpen, Trash2 } from 'lucide-react';
 
 const SavedCourses = () => {
