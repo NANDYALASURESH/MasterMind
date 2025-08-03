@@ -382,10 +382,11 @@ const LearningPlatform = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            gap: '24px'
+            gap: '24px',
+            flexWrap: 'wrap'
           }}>
             {/* Logo */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
               <div style={{
                 width: '40px',
                 height: '40px',
@@ -404,8 +405,11 @@ const LearningPlatform = () => {
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
                 backgroundClip: 'text',
-                margin: 0
-              }}>
+                margin: 0,
+                '@media (max-width: 768px)': {
+                  fontSize: '20px'
+                }
+              }} className="brand-title">
                 MasterMind
               </h1>
             </div>
@@ -414,8 +418,15 @@ const LearningPlatform = () => {
             <div style={{
               flex: 1,
               maxWidth: '500px',
-              position: 'relative'
-            }}>
+              position: 'relative',
+              minWidth: '200px',
+              '@media (max-width: 768px)': {
+                order: 3,
+                flex: '1 1 100%',
+                maxWidth: 'none',
+                marginTop: '16px'
+              }
+            }} className="search-container">
               <div style={{
                 position: 'relative',
                 display: 'flex',
@@ -444,8 +455,13 @@ const LearningPlatform = () => {
                     backgroundColor: '#ffffff',
                     color: '#1e293b',
                     outline: 'none',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    '@media (max-width: 768px)': {
+                      fontSize: '14px',
+                      padding: '12px 16px 12px 44px'
+                    }
                   }}
+                  className="search-input"
                   onFocus={(e) => e.target.style.borderColor = '#667eea'}
                   onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
                 />
@@ -453,7 +469,15 @@ const LearningPlatform = () => {
             </div>
 
             {/* Right Section */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '16px',
+              flexShrink: 0,
+              '@media (max-width: 768px)': {
+                gap: '12px'
+              }
+            }} className="right-section">
               {/* Notifications */}
               <div style={{ position: 'relative' }} ref={notificationRef}>
                 <button style={{
@@ -624,15 +648,29 @@ const LearningPlatform = () => {
                     top: '100%',
                     right: 0,
                     marginTop: '8px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.98)',
                     backdropFilter: 'blur(20px)',
                     borderRadius: '16px',
                     boxShadow: '0 25px 50px rgba(0, 0, 0, 0.15)',
                     border: '1px solid rgba(255, 255, 255, 0.2)',
                     minWidth: '280px',
-                    zIndex: 100,
-                    overflow: 'hidden'
-                  }}>
+                    maxWidth: '320px',
+                    zIndex: 1000,
+                    overflow: 'hidden',
+                    transform: 'translateZ(0)',
+                    '@media (max-width: 768px)': {
+                      position: 'fixed',
+                      top: 'auto',
+                      bottom: '20px',
+                      left: '20px',
+                      right: '20px',
+                      minWidth: 'auto',
+                      maxWidth: 'none',
+                      width: 'calc(100vw - 40px)',
+                      marginTop: '0',
+                      zIndex: 9999
+                    }
+                  }} className="user-dropdown">
                     {/* User Info Header */}
                     <div style={{
                       padding: '20px',
@@ -652,9 +690,25 @@ const LearningPlatform = () => {
                             border: '2px solid #e2e8f0'
                           }}
                         />
-                        <div>
-                          <div style={{ fontWeight: 700 }}>{user.name || user.username || "User"}</div>
-                          <div style={{ fontSize: '12px', color: '#e0e7ef' }}>{user.email || ""}</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ 
+                            fontWeight: 700, 
+                            fontSize: '14px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}>
+                            {user.name || user.username || "User"}
+                          </div>
+                          <div style={{ 
+                            fontSize: '12px', 
+                            color: '#e0e7ef',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}>
+                            {user.email || ""}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -665,7 +719,16 @@ const LearningPlatform = () => {
                       borderBottom: '1px solid #e2e8f0',
                       backgroundColor: '#f8fafc'
                     }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px', textAlign: 'center' }}>
+                      <div style={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: '1fr 1fr 1fr', 
+                        gap: '16px', 
+                        textAlign: 'center',
+                        '@media (max-width: 480px)': {
+                          gridTemplateColumns: '1fr 1fr',
+                          gap: '12px'
+                        }
+                      }} className="user-stats">
                         <div>
                           <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
                             {user.completedCourses || 0}
@@ -678,7 +741,11 @@ const LearningPlatform = () => {
                           </div>
                           <div style={{ fontSize: '12px', color: '#64748b' }}>Saved</div>
                         </div>
-                        <div>
+                        <div style={{
+                          '@media (max-width: 480px)': {
+                            gridColumn: '1 / -1'
+                          }
+                        }} className="learning-hours">
                           <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
                             {user.totalHours || 0}h
                           </div>
@@ -980,8 +1047,20 @@ const LearningPlatform = () => {
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
-              gap: '24px'
-            }}>
+              gap: '24px',
+              '@media (max-width: 1200px)': {
+                gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                gap: '20px'
+              },
+              '@media (max-width: 768px)': {
+                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gap: '16px'
+              },
+              '@media (max-width: 480px)': {
+                gridTemplateColumns: '1fr',
+                gap: '16px'
+              }
+            }} className="courses-grid">
               {filteredCourses.slice(0, visibleCount).map(course => (
                 <div key={course._id} style={{
                   backgroundColor: 'rgba(255, 255, 255, 0.8)',
@@ -1074,7 +1153,15 @@ const LearningPlatform = () => {
                   </div>
 
                   {/* Course Content */}
-                  <div style={{ padding: '24px' }}>
+                  <div style={{ 
+                    padding: '24px',
+                    '@media (max-width: 768px)': {
+                      padding: '20px'
+                    },
+                    '@media (max-width: 480px)': {
+                      padding: '16px'
+                    }
+                  }} className="course-content">
                     <h3 style={{
                       fontSize: '18px',
                       fontWeight: '600',
@@ -1085,15 +1172,26 @@ const LearningPlatform = () => {
                       overflow: 'hidden',
                       display: '-webkit-box',
                       WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical'
-                    }}>
+                      WebkitBoxOrient: 'vertical',
+                      '@media (max-width: 768px)': {
+                        fontSize: '16px',
+                        height: '44px'
+                      },
+                      '@media (max-width: 480px)': {
+                        fontSize: '15px',
+                        height: '40px'
+                      }
+                    }} className="course-title">
                       {course.title}
                     </h3>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
                       <p style={{
                         fontSize: '14px',
                         color: '#64748b',
-                        margin: 0
+                        margin: 0,
+                        '@media (max-width: 480px)': {
+                          fontSize: '13px'
+                        }
                       }}>
                         by {course.instructor}
                       </p>
@@ -1106,8 +1204,17 @@ const LearningPlatform = () => {
                       gap: '16px',
                       marginBottom: '20px',
                       fontSize: '14px',
-                      color: '#64748b'
-                    }}>
+                      color: '#64748b',
+                      '@media (max-width: 768px)': {
+                        gap: '12px',
+                        fontSize: '13px'
+                      },
+                      '@media (max-width: 480px)': {
+                        gap: '8px',
+                        fontSize: '12px',
+                        flexWrap: 'wrap'
+                      }
+                    }} className="course-meta">
                       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <Clock size={16} />
                         <span>{course.duration}h</span>
@@ -1276,9 +1383,18 @@ const LearningPlatform = () => {
           100% { transform: rotate(360deg); }
         }
         
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+          .courses-grid {
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)) !important;
+            gap: 20px !important;
+          }
+        }
+        
         @media (max-width: 768px) {
           .courses-grid {
-            grid-template-columns: 1fr !important;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+            gap: 16px !important;
           }
           
           .filters-grid {
@@ -1293,12 +1409,89 @@ const LearningPlatform = () => {
           .search-container {
             order: 3 !important;
             width: 100% !important;
+            margin-top: 16px !important;
           }
           
           .right-section {
             order: 2 !important;
             width: 100% !important;
             justify-content: space-between !important;
+            gap: 12px !important;
+          }
+          
+          .brand-title {
+            font-size: 20px !important;
+          }
+          
+          .search-input {
+            font-size: 14px !important;
+            padding: 12px 16px 12px 44px !important;
+          }
+          
+          .course-content {
+            padding: 20px !important;
+          }
+          
+          .course-title {
+            font-size: 16px !important;
+            height: 44px !important;
+          }
+          
+          .course-meta {
+            gap: 12px !important;
+            font-size: 13px !important;
+          }
+          
+          .user-dropdown {
+            position: fixed !important;
+            top: auto !important;
+            bottom: 20px !important;
+            left: 20px !important;
+            right: 20px !important;
+            width: calc(100vw - 40px) !important;
+            min-width: auto !important;
+            max-width: none !important;
+            margin-top: 0 !important;
+            z-index: 9999 !important;
+          }
+          
+          .user-stats {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 12px !important;
+          }
+          
+          .user-stats .learning-hours {
+            grid-column: 1 / -1 !important;
+          }
+        }
+        
+        @media (max-width: 480px) {
+          .courses-grid {
+            grid-template-columns: 1fr !important;
+            gap: 16px !important;
+          }
+          
+          .course-content {
+            padding: 16px !important;
+          }
+          
+          .course-title {
+            font-size: 15px !important;
+            height: 40px !important;
+          }
+          
+          .course-instructor {
+            font-size: 13px !important;
+          }
+          
+          .course-meta {
+            gap: 8px !important;
+            font-size: 12px !important;
+            flex-wrap: wrap !important;
+          }
+          
+          .right-section {
+            gap: 8px !important;
           }
         }
       `}</style>
