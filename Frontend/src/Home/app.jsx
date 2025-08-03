@@ -24,6 +24,7 @@ const LearningPlatform = () => {
   ]);
   const userMenuRef = useRef(null);
   const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(false);
 
   const [filters, setFilters] = useState({
     platform: '',
@@ -57,6 +58,24 @@ const LearningPlatform = () => {
     };
 
     fetchProfile();
+  }, []);
+
+  // Track screen size for mobile responsiveness
+  useEffect(() => {
+    const checkScreenSize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      console.log('Screen size changed:', window.innerWidth, 'Mobile:', mobile);
+    };
+
+    // Set initial value
+    checkScreenSize();
+
+    // Add event listener for window resize
+    window.addEventListener('resize', checkScreenSize);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
   useEffect(() => {
@@ -410,7 +429,7 @@ const LearningPlatform = () => {
                   fontSize: '20px'
                 }
               }} className="brand-title">
-                MasterMind
+                MasterMind {isMobile && '(Mobile)'}
               </h1>
             </div>
 
@@ -594,7 +613,15 @@ const LearningPlatform = () => {
               <div style={{ position: 'relative' }} ref={userMenuRef}>
                 {user ? (
                   <button
-                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    onClick={() => {
+                      console.log('Profile button clicked, current state:', showUserMenu, 'Mobile:', isMobile);
+                      setShowUserMenu(!showUserMenu);
+                    }}
+                    onTouchEnd={(e) => {
+                      e.preventDefault();
+                      console.log('Profile button touched, current state:', showUserMenu, 'Mobile:', isMobile);
+                      setShowUserMenu(!showUserMenu);
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -604,7 +631,8 @@ const LearningPlatform = () => {
                       border: 'none',
                       backgroundColor: showUserMenu ? '#f1f5f9' : 'transparent',
                       cursor: 'pointer',
-                      transition: 'all 0.2s ease'
+                      transition: 'all 0.2s ease',
+                      WebkitTapHighlightColor: 'transparent'
                     }}
                   >
                     <img
@@ -645,50 +673,42 @@ const LearningPlatform = () => {
                 {showUserMenu && user && (
                   <>
                     {/* Mobile Backdrop Overlay */}
+                    {isMobile && (
+                      <div 
+                        style={{
+                          position: 'fixed',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                          zIndex: 9999
+                        }} 
+                        onClick={() => setShowUserMenu(false)}
+                        onTouchEnd={(e) => {
+                          e.preventDefault();
+                          setShowUserMenu(false);
+                        }}
+                      />
+                    )}
                     <div style={{
-                      position: 'fixed',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                      zIndex: 9999,
-                      display: 'none',
-                      '@media (max-width: 768px)': {
-                        display: 'block'
-                      }
-                    }} 
-                    onClick={() => setShowUserMenu(false)}
-                    />
-                    <div style={{
-                      position: 'absolute',
-                      top: '100%',
-                      right: 0,
-                      marginTop: '8px',
+                      position: isMobile ? 'fixed' : 'absolute',
+                      top: isMobile ? 'auto' : '100%',
+                      bottom: isMobile ? '20px' : 'auto',
+                      left: isMobile ? '20px' : 'auto',
+                      right: isMobile ? '20px' : 0,
+                      marginTop: isMobile ? '0' : '8px',
                       backgroundColor: 'rgba(255, 255, 255, 0.98)',
                       backdropFilter: 'blur(20px)',
                       borderRadius: '16px',
-                      boxShadow: '0 25px 50px rgba(0, 0, 0, 0.15)',
+                      boxShadow: isMobile ? '0 25px 50px rgba(0, 0, 0, 0.25)' : '0 25px 50px rgba(0, 0, 0, 0.15)',
                       border: '1px solid rgba(255, 255, 255, 0.2)',
-                      minWidth: '280px',
-                      maxWidth: '320px',
-                      zIndex: 1000,
+                      minWidth: isMobile ? 'auto' : '280px',
+                      maxWidth: isMobile ? 'none' : '320px',
+                      width: isMobile ? 'calc(100vw - 40px)' : 'auto',
+                      zIndex: 10000,
                       overflow: 'hidden',
-                      transform: 'translateZ(0)',
-                      '@media (max-width: 768px)': {
-                        position: 'fixed',
-                        top: 'auto',
-                        bottom: '20px',
-                        left: '20px',
-                        right: '20px',
-                        minWidth: 'auto',
-                        maxWidth: 'none',
-                        width: 'calc(100vw - 40px)',
-                        marginTop: '0',
-                        zIndex: 10000,
-                        transform: 'translateZ(0)',
-                        boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)'
-                      }
+                      transform: 'translateZ(0)'
                     }} className="user-dropdown">
                     {/* User Info Header */}
                     <div style={{
@@ -821,6 +841,19 @@ const LearningPlatform = () => {
                             }
                             setShowUserMenu(false); // Close menu after click
                           }}
+                          onTouchEnd={(e) => {
+                            e.preventDefault();
+                            if (item.label === 'Saved Courses') {
+                              navigate('/saved-courses');
+                            } else if (item.label === 'Profile') {
+                              console.log('Profile clicked');
+                            } else if (item.label === 'Settings') {
+                              console.log('Settings clicked');
+                            } else if (item.label === 'Certificates') {
+                              console.log('Certificates clicked');
+                            }
+                            setShowUserMenu(false);
+                          }}
                           onMouseOver={(e) => e.target.style.backgroundColor = '#f1f5f9'}
                           onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
                         >
@@ -842,6 +875,10 @@ const LearningPlatform = () => {
 
                       <button
                         onClick={handleLogout}
+                        onTouchEnd={(e) => {
+                          e.preventDefault();
+                          handleLogout();
+                        }}
                         style={{
                           width: '100%',
                           display: 'flex',
@@ -855,7 +892,8 @@ const LearningPlatform = () => {
                           fontWeight: '500',
                           cursor: 'pointer',
                           transition: 'all 0.2s ease',
-                          textAlign: 'left'
+                          textAlign: 'left',
+                          WebkitTapHighlightColor: 'transparent'
                         }}
                         onMouseOver={(e) => e.target.style.backgroundColor = '#fef2f2'}
                         onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
@@ -1403,6 +1441,22 @@ const LearningPlatform = () => {
           100% { transform: rotate(360deg); }
         }
         
+        /* Mobile touch improvements */
+        @media (max-width: 768px) {
+          * {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+          }
+          
+          button {
+            -webkit-tap-highlight-color: transparent;
+          }
+        }
+        
         /* Responsive Design */
         @media (max-width: 1200px) {
           .courses-grid {
@@ -1462,20 +1516,7 @@ const LearningPlatform = () => {
             font-size: 13px !important;
           }
           
-          .user-dropdown {
-            position: fixed !important;
-            top: auto !important;
-            bottom: 20px !important;
-            left: 20px !important;
-            right: 20px !important;
-            width: calc(100vw - 40px) !important;
-            min-width: auto !important;
-            max-width: none !important;
-            margin-top: 0 !important;
-            z-index: 10000 !important;
-            transform: translateZ(0) !important;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25) !important;
-          }
+
           
           .user-stats {
             grid-template-columns: 1fr 1fr !important;
