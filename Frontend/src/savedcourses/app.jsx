@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Heart, Clock, Star, Users, ArrowLeft, BookOpen, Trash2, AlertCircle, RefreshCw } from 'lucide-react';
 import './app.css';
+import Cookies from 'js-cookie'; // Added import for Cookies
 
 const SavedCourses = () => {
   const [savedCourses, setSavedCourses] = useState([]);
@@ -9,80 +10,14 @@ const SavedCourses = () => {
   const [error, setError] = useState(null);
   const [removingCourse, setRemovingCourse] = useState(null);
 
-  // Demo data for testing the UI
-  // const demoData = [
-  //   {
-  //     _id: '1',
-  //     title: 'Complete React Developer Course',
-  //     instructor: 'John Smith',
-  //     platform: 'Udemy',
-  //     description: 'Master React from basics to advanced concepts including hooks, context, and testing.',
-  //     difficulty: 'intermediate',
-  //     duration: '40 hours',
-  //     rating: '4.8',
-  //     students: '150,000',
-  //     price: '$89.99',
-  //     url: 'https://example.com/react-course',
-  //     image: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h=250&fit=crop'
-  //   },
-  //   {
-  //     _id: '2',
-  //     title: 'Python for Data Science',
-  //     instructor: 'Dr. Sarah Johnson',
-  //     platform: 'Coursera',
-  //     description: 'Learn Python programming for data analysis, visualization, and machine learning.',
-  //     difficulty: 'beginner',
-  //     duration: '25 hours',
-  //     rating: '4.6',
-  //     students: '75,000',
-  //     price: 'Free',
-  //     url: 'https://example.com/python-course',
-  //     image: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=400&h=250&fit=crop'
-  //   },
-  //   {
-  //     _id: '3',
-  //     title: 'Advanced JavaScript Concepts',
-  //     instructor: 'Mike Chen',
-  //     platform: 'edX',
-  //     description: 'Deep dive into advanced JavaScript topics including closures, prototypes, and async programming.',
-  //     difficulty: 'advanced',
-  //     duration: '30 hours',
-  //     rating: '4.9',
-  //     students: '45,000',
-  //     price: '$129.99',
-  //     url: 'https://example.com/js-course',
-  //     image: 'https://images.unsplash.com/photo-1579468118864-1b9ea3c0db4a?w=400&h=250&fit=crop'
-  //   },
-  //   {
-  //     _id: '4',
-  //     title: 'Machine Learning Fundamentals',
-  //     instructor: 'Dr. Emily Wang',
-  //     platform: 'Coursera',
-  //     description: 'Introduction to machine learning algorithms and practical applications.',
-  //     difficulty: 'intermediate',
-  //     duration: '35 hours',
-  //     rating: '4.7',
-  //     students: '92,000',
-  //     price: '$79.99',
-  //     url: 'https://example.com/ml-course',
-  //     image: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400&h=250&fit=crop'
-  //   },
-  //   {
-  //     _id: '5',
-  //     title: 'Web Design Masterclass',
-  //     instructor: 'Alex Rodriguez',
-  //     platform: 'Udemy',
-  //     description: 'Complete guide to modern web design principles and best practices.',
-  //     difficulty: 'beginner',
-  //     duration: '20 hours',
-  //     rating: '4.5',
-  //     students: '38,000',
-  //     price: 'Free',
-  //     url: 'https://example.com/design-course',
-  //     image: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=250&fit=crop'
-  // }];
 
   const fetchSavedCourses = async () => {
+    const token = Cookies.get("jwt_token"); // Get token from cookie
+    if (!token) {
+      setError("No JWT token found in cookies. Please log in.");
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
 
@@ -91,6 +26,7 @@ const SavedCourses = () => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, // Add Authorization header
         },
       });
 
@@ -123,6 +59,13 @@ const SavedCourses = () => {
   }, []); // Remove token as a dependency
 
   const handleRemoveCourse = async (courseId) => {
+    const token = Cookies.get("jwt_token"); // Get token from cookie
+    if (!token) {
+      setError("No JWT token found in cookies. Please log in.");
+      setRemovingCourse(null);
+      return;
+    }
+
     setRemovingCourse(courseId);
     setError(null);
 
@@ -131,6 +74,7 @@ const SavedCourses = () => {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, // Add Authorization header
         },
         body: JSON.stringify({ course_id: courseId }),
       });
