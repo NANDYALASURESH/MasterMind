@@ -440,3 +440,25 @@ body {
 .course-card:nth-child(4) { animation-delay: 0.3s; }
 .course-card:nth-child(5) { animation-delay: 0.4s; }
 .course-card:nth-child(6) { animation-delay: 0.5s; }
+
+.loading-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  position: fixed; /* Use fixed to cover entire viewport */
+  top: 0;
+  left: 0;
+  background-color: #f8fafc; /* Match body background */
+  z-index: 999; /* Ensure it's on top */
+}
+
+.saved-courses-container{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+
+}

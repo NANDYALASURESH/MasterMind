@@ -40,7 +40,7 @@ const LearningPlatform = () => {
       if (!token) return;
 
       try {
-        const res = await fetch('https://mastermind-0ex7.onrender.com/profile', {
+        const res = await fetch('https://mastermind-2.onrender.com/profile', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -64,12 +64,11 @@ const LearningPlatform = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch('https://mastermind-0ex7.onrender.com/courses');
+        const res = await fetch('https://mastermind-2.onrender.com/courses');
         if (!res.ok) throw new Error('Failed to fetch');
         const data = await res.json();
         // Backend returns an array directly
         const coursesArr = Array.isArray(data) ? data : [];
-        console.log(coursesArr)
         setCourses(coursesArr);
         setFilteredCourses(coursesArr);
         // Extract unique platforms from fetched data
@@ -93,14 +92,14 @@ const LearningPlatform = () => {
       const token = Cookies.get('jwt_token');
       if (!token) return;
       try {
-        const res = await fetch('https://mastermind-0ex7.onrender.com/saved-courses', {
+        const res = await fetch('https://mastermind-2.onrender.com/saved-courses', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
         if (res.ok) {
           const data = await res.json();
-          setSavedCourses(data.map(course => course.id)); // store only course IDs
+          setSavedCourses(data.map(course => course._id)); // store only course IDs
         }
       } catch (err) {
         setSavedCourses([]);
@@ -223,7 +222,6 @@ const LearningPlatform = () => {
   };
 
   const handleLogout = () => {
-      console.log('Logging out...');
       Cookies.remove('jwt_token');
       navigate('/login');
   };
@@ -239,7 +237,7 @@ const LearningPlatform = () => {
     if (savedCourses.includes(courseId)) {
       // Unsave (DELETE)
       try {
-        const res = await fetch('https://mastermind-0ex7.onrender.com/saved-courses', {
+        const res = await fetch('https://mastermind-2.onrender.com/saved-courses', {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -252,15 +250,15 @@ const LearningPlatform = () => {
         } else {
           // Optionally show an error message
           const data = await res.json();
-          alert(data.message || 'Failed to unsave course');
+          console.error('Failed to unsave course:', data.message || 'Unknown error');
         }
       } catch (err) {
-        alert('Network error while unsaving course');
+        console.error('Network error while unsaving course:', err);
       }
     } else {
       // Save (POST)
       try {
-        const res = await fetch('https://mastermind-0ex7.onrender.com/saved-courses', {
+        const res = await fetch('https://mastermind-2.onrender.com/saved-courses', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -273,10 +271,10 @@ const LearningPlatform = () => {
         } else {
           // Optionally show an error message
           const data = await res.json();
-          alert(data.message || 'Failed to save course');
+          console.error('Failed to save course:', data.message || 'Unknown error');
         }
       } catch (err) {
-        alert('Network error while saving course');
+        console.error('Network error while saving course:', err);
       }
     }
   };
@@ -974,7 +972,7 @@ const LearningPlatform = () => {
               gap: '24px'
             }}>
               {filteredCourses.slice(0, visibleCount).map(course => (
-                <div key={course.id} style={{
+                <div key={course._id} style={{
                   backgroundColor: 'rgba(255, 255, 255, 0.8)',
                   backdropFilter: 'blur(20px)',
                   borderRadius: '16px',
@@ -1048,16 +1046,16 @@ const LearningPlatform = () => {
                     <button
   onClick={(e) => {
     e.stopPropagation();
-    handleSaveCourse(course.id);
+    handleSaveCourse(course._id);
   }}
-  aria-label={savedCourses.includes(course.id) ? "Unsave course" : "Save course"}
+  aria-label={savedCourses.includes(course._id) ? "Unsave course" : "Save course"}
                       style={{outline:"none",color:"black", position: 'absolute', top: '44px', right: '12px', background: 'transparent', border: 'none', cursor: 'pointer'}}
 >
   <Heart
     size={22}
-    color={savedCourses.includes(course.id) ? "#ef4444" : "#64748b"}
-    fill={savedCourses.includes(course.id) ? "#ef4444" : "none"}
-    style={{ transition: 'all 0.2s' }}
+    color={savedCourses.includes(course._id) ? "#ef4444" : "#64748b"}
+    fill={savedCourses.includes(course._id) ? "#ef4444" : "none"}
+    style={{ transition: 'color 0.5s ease' }}
   />
 </button>
 
