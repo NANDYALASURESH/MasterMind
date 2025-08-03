@@ -1,6 +1,7 @@
 // SavedCourses.jsx
 import React, { useState, useEffect } from 'react';
 import { Heart, Clock, Star, Users, ArrowLeft, BookOpen, Trash2, AlertCircle, RefreshCw } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import './app.css';
 import Cookies from 'js-cookie'; // Added import for Cookies
 
@@ -9,6 +10,7 @@ const SavedCourses = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [removingCourse, setRemovingCourse] = useState(null);
+  const navigate = useNavigate();
 
 
   const fetchSavedCourses = async () => {
@@ -169,7 +171,10 @@ const SavedCourses = () => {
         <div className="header-container">
           <div className="header-content">
             <div className="header-left">
-              <button className="back-button">
+              <button 
+                className="back-button"
+                onClick={() => navigate('/home')}
+              >
                 <ArrowLeft size={24} />
               </button>
               <div>
