@@ -36,34 +36,26 @@ const LearningPlatform = () => {
   const [savedCourses, setSavedCourses] = useState([]);
 
   useEffect(() => {
-      const fetchProfile = async () => {
-    const token = Cookies.get('jwt_token');
-    if (!token) {
-      console.log('No JWT token found');
-      return;
-    }
+                    const fetchProfile = async () => {
+                const token = Cookies.get('jwt_token');
+                if (!token) return;
 
-    console.log('Fetching profile with token:', token.substring(0, 20) + '...');
-
-    try {
-      const res = await fetch('https://mastermind-2.onrender.com/profile', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        console.log('Profile fetched successfully:', data);
-        setUser(data.user);
-      } else {
-        console.log('Failed to fetch profile, status:', res.status);
-        setUser(null);
-      }
-    } catch (err) {
-      console.error('Error fetching profile:', err);
-      setUser(null);
-    }
-  };
+                try {
+                  const res = await fetch('https://mastermind-2.onrender.com/profile', {
+                    headers: {
+                      Authorization: `Bearer ${token}`,
+                    },
+                  });
+                  if (res.ok) {
+                    const data = await res.json();
+                    setUser(data.user);
+                  } else {
+                    setUser(null);
+                  }
+                } catch (err) {
+                  setUser(null);
+                }
+              };
 
     fetchProfile();
   }, []);
@@ -71,9 +63,8 @@ const LearningPlatform = () => {
   // Track screen size for mobile responsiveness
   useEffect(() => {
     const checkScreenSize = () => {
-      const mobile = window.innerWidth <= 768;
-      setIsMobile(mobile);
-      console.log('Screen size changed:', window.innerWidth, 'Mobile:', mobile);
+          const mobile = window.innerWidth <= 768;
+    setIsMobile(mobile);
     };
 
     // Set initial value
@@ -437,7 +428,7 @@ const LearningPlatform = () => {
                   fontSize: '20px'
                 }
               }} className="brand-title">
-                MasterMind {isMobile && '(Mobile)'}
+                MasterMind
               </h1>
             </div>
 
@@ -500,11 +491,10 @@ const LearningPlatform = () => {
               display: 'flex', 
               alignItems: 'center', 
               gap: '16px',
-              flexShrink: 0,
-              '@media (max-width: 768px)': {
-                gap: '12px',
-                order: 2
-              }
+                              flexShrink: 0,
+                '@media (max-width: 768px)': {
+                  gap: '12px'
+                }
             }} className="right-section">
               {/* Notifications */}
               <div style={{ position: 'relative' }} ref={notificationRef}>
@@ -618,92 +608,15 @@ const LearningPlatform = () => {
                 )}
               </button>
 
-              {/* Debug Button for Mobile */}
-              {isMobile && (
-                <button
-                  onClick={() => {
-                    console.log('Debug button clicked');
-                    alert(`User: ${user ? 'Logged in' : 'Not logged in'}, Mobile: ${isMobile}`);
-                  }}
-                  style={{
-                    padding: '8px 12px',
-                    backgroundColor: '#ef4444',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                    marginRight: '8px'
-                  }}
-                >
-                  Debug
-                </button>
-              )}
 
-              {/* Test User Button for Mobile */}
-              {isMobile && (
-                <button
-                  onClick={() => {
-                    console.log('Test user button clicked');
-                    setUser({
-                      username: 'TestUser',
-                      name: 'Test User',
-                      avatar: 'https://ui-avatars.com/api/?name=Test+User'
-                    });
-                  }}
-                  style={{
-                    padding: '8px 12px',
-                    backgroundColor: '#10b981',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                    marginRight: '8px'
-                  }}
-                >
-                  Test User
-                </button>
-              )}
-
-              {/* Debug Link for Mobile */}
-              {isMobile && (
-                <a
-                  href="/debug"
-                  style={{
-                    padding: '8px 12px',
-                    backgroundColor: '#8b5cf6',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                    marginRight: '8px',
-                    textDecoration: 'none',
-                    display: 'inline-block'
-                  }}
-                >
-                  Debug
-                </a>
-              )}
 
               {/* User Profile Dropdown */}
-              <div style={{ 
-                position: 'relative',
-                ...(isMobile && {
-                  border: '2px solid #10b981',
-                  padding: '4px',
-                  borderRadius: '8px',
-                  backgroundColor: '#f0fdf4'
-                })
-              }} ref={userMenuRef}>
-                {console.log('Rendering profile section, user:', user, 'isMobile:', isMobile)}
+              <div style={{ position: 'relative' }} ref={userMenuRef}>
                 {user ? (
                   <button
-                    onClick={() => {
-                      console.log('Profile button clicked, current state:', showUserMenu, 'Mobile:', isMobile);
-                      setShowUserMenu(!showUserMenu);
-                    }}
+                    onClick={() => setShowUserMenu(!showUserMenu)}
                     onTouchEnd={(e) => {
                       e.preventDefault();
-                      console.log('Profile button touched, current state:', showUserMenu, 'Mobile:', isMobile);
                       setShowUserMenu(!showUserMenu);
                     }}
                     style={{
@@ -716,14 +629,7 @@ const LearningPlatform = () => {
                       backgroundColor: showUserMenu ? '#f1f5f9' : 'transparent',
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
-                      WebkitTapHighlightColor: 'transparent',
-                      ...(isMobile && {
-                        border: '3px solid #ef4444',
-                        backgroundColor: '#fef2f2',
-                        padding: '12px',
-                        minWidth: '60px',
-                        minHeight: '60px'
-                      })
+                      WebkitTapHighlightColor: 'transparent'
                     }}
                   >
                     <img
@@ -737,50 +643,27 @@ const LearningPlatform = () => {
                         border: '2px solid #e2e8f0'
                       }}
                     />
-                    {!isMobile && (
-                      <ChevronDown
-                        size={16}
-                        color="#64748b"
-                        style={{
-                          transform: showUserMenu ? 'rotate(180deg)' : 'rotate(0deg)',
-                          transition: 'transform 0.2s ease'
-                        }}
-                      />
-                    )}
-                    {isMobile && (
-                      <span style={{
-                        fontSize: '12px',
-                        color: '#ef4444',
-                        fontWeight: 'bold'
-                      }}>
-                        Profile
-                      </span>
-                    )}
+                    <ChevronDown
+                      size={16}
+                      color="#64748b"
+                      style={{
+                        transform: showUserMenu ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s ease'
+                      }}
+                    />
                   </button>
                 ) : (
-                  <button
-                    onClick={() => {
-                      console.log('Fallback profile button clicked');
-                      alert('No user logged in');
-                    }}
-                    style={{
-                      width: '36px',
-                      height: '36px',
-                      borderRadius: '50%',
-                      background: '#e2e8f0',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: 'none',
-                      cursor: 'pointer',
-                      ...(isMobile && {
-                        border: '2px solid #ef4444',
-                        background: '#fef2f2'
-                      })
-                    }}
-                  >
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    background: '#e2e8f0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
                     <User size={20} color="#64748b" />
-                  </button>
+                  </div>
                 )}
 
                 {/* User Dropdown Menu */}
@@ -942,15 +825,12 @@ const LearningPlatform = () => {
                               navigate('/saved-courses');
                             } else if (item.label === 'Profile') {
                               // Navigate to profile page or show profile modal
-                              console.log('Profile clicked');
                               // You can add navigation to a profile page here
                             } else if (item.label === 'Settings') {
                               // Navigate to settings page or show settings modal
-                              console.log('Settings clicked');
                               // You can add navigation to a settings page here
                             } else if (item.label === 'Certificates') {
                               // Navigate to certificates page
-                              console.log('Certificates clicked');
                               // You can add navigation to a certificates page here
                             }
                             setShowUserMenu(false); // Close menu after click
@@ -960,11 +840,11 @@ const LearningPlatform = () => {
                             if (item.label === 'Saved Courses') {
                               navigate('/saved-courses');
                             } else if (item.label === 'Profile') {
-                              console.log('Profile clicked');
+                              // Handle profile click
                             } else if (item.label === 'Settings') {
-                              console.log('Settings clicked');
+                              // Handle settings click
                             } else if (item.label === 'Certificates') {
-                              console.log('Certificates clicked');
+                              // Handle certificates click
                             }
                             setShowUserMenu(false);
                           }}
