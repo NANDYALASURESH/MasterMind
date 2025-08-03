@@ -720,8 +720,19 @@ const LearningPlatform = () => {
                           onClick={() => {
                             if (item.label === 'Saved Courses') {
                               navigate('/saved-courses');
+                            } else if (item.label === 'Profile') {
+                              // Navigate to profile page or show profile modal
+                              console.log('Profile clicked');
+                              // You can add navigation to a profile page here
+                            } else if (item.label === 'Settings') {
+                              // Navigate to settings page or show settings modal
+                              console.log('Settings clicked');
+                              // You can add navigation to a settings page here
+                            } else if (item.label === 'Certificates') {
+                              // Navigate to certificates page
+                              console.log('Certificates clicked');
+                              // You can add navigation to a certificates page here
                             }
-                            // Add other navigation logic here if needed for other items
                             setShowUserMenu(false); // Close menu after click
                           }}
                           onMouseOver={(e) => e.target.style.backgroundColor = '#f1f5f9'}

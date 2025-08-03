@@ -335,10 +335,16 @@ app.post("/resend-otp", async (req, res) => {
 
 // Middleware to authenticate and extract user from JWT
 function authenticateToken(req, res, next) {
-  const token = req.cookies.jwt_token; // Get token from HttpOnly cookie
+  // Check for token in Authorization header first, then cookies
+  let token = req.headers.authorization?.split(' ')[1]; // Bearer token
+  if (!token) {
+    token = req.cookies.jwt_token; // Get token from HttpOnly cookie
+  }
+  
   if (!token) {
     return res.status(401).json({ message: "Authentication token missing." });
   }
+  
   try {
     const decoded = jwt.verify(token, "MY_SECRET_TOKEN");
     req.user = decoded;
@@ -405,7 +411,11 @@ app.get('/saved-courses', authenticateToken, async (req, res) => {
 
 
 app.get('/profile', (req, res) => {
-  const token = req.cookies.jwt_token; // Get token from HttpOnly cookie
+  // Check for token in Authorization header first, then cookies
+  let token = req.headers.authorization?.split(' ')[1]; // Bearer token
+  if (!token) {
+    token = req.cookies.jwt_token; // Get token from HttpOnly cookie
+  }
 
   if (!token) {
     return res.status(401).json({ message: 'Authentication token missing.' });
