@@ -1,56 +1,79 @@
 import React, { useState, useEffect } from 'react';
-import ThreeDotsLoader from "../loader/app"; // adjust path if neede
-import './app.css';
-import { Heart, Clock, Star, Users, ArrowLeft, BookOpen, Trash2 } from 'lucide-react';
+import { Heart, Clock, Star, Users, ArrowLeft, BookOpen, Trash2, AlertCircle, RefreshCw } from 'lucide-react';
 
 const SavedCourses = () => {
   const [savedCourses, setSavedCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [token, setToken] = useState(null);
+  const [removingCourse, setRemovingCourse] = useState(null);
 
-  // Get token from cookies (you can replace this with your cookie library)
+  // Get token from localStorage or cookies
   useEffect(() => {
-    const getCookie = (name) => {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop().split(';').shift();
+    const getAuthToken = () => {
+      // Try localStorage first
+      let authToken = localStorage.getItem('jwt_token') || localStorage.getItem('authToken');
+      
+      // If not in localStorage, try cookies
+      if (!authToken) {
+        const getCookie = (name) => {
+          const value = `; ${document.cookie}`;
+          const parts = value.split(`; ${name}=`);
+          if (parts.length === 2) return parts.pop().split(';').shift();
+        };
+        authToken = getCookie('jwt_token') || getCookie('authToken');
+      }
+      
+      return authToken;
     };
-    setToken(getCookie('jwt_token'));
+    
+    setToken(getAuthToken());
   }, []);
 
-  useEffect(() => {
-    const fetchSavedCourses = async () => {
-      if (!token) {
-        setLoading(false);
-        setError("Please log in to view your saved courses.");
-        return;
-      }
+  const fetchSavedCourses = async () => {
+    if (!token) {
+      setLoading(false);
+      setError("Please log in to view your saved courses.");
+      return;
+    }
 
-      setLoading(true);
-      setError(null);
-      try {
-        const res = await fetch('https://mastermind-2.onrender.com/saved-courses', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const res = await fetch('https://mastermind-2.onrender.com/saved-courses', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
-        if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.message || 'Failed to fetch saved courses');
+      if (!res.ok) {
+        if (res.status === 401) {
+          throw new Error('Your session has expired. Please log in again.');
+        } else if (res.status === 403) {
+          throw new Error('You are not authorized to access this resource.');
+        } else if (res.status === 500) {
+          throw new Error('Server error. Please try again later.');
         }
-
-        const data = await res.json();
-        setSavedCourses(data);
-      } catch (err) {
-        setError(err.message);
-        setSavedCourses([]);
-      } finally {
-        setLoading(false);
+        
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `Failed to fetch saved courses (${res.status})`);
       }
-    };
 
+      const data = await res.json();
+      setSavedCourses(Array.isArray(data) ? data : data.courses || []);
+    } catch (err) {
+      console.error('Error fetching saved courses:', err);
+      setError(err.message);
+      setSavedCourses([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     if (token) {
       fetchSavedCourses();
     }
@@ -62,538 +85,286 @@ const SavedCourses = () => {
       return;
     }
 
+    setRemovingCourse(courseId);
+    setError(null);
+
     try {
       const res = await fetch('https://mastermind-2.onrender.com/saved-courses', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ course_id: courseId }),
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
+        if (res.status === 401) {
+          throw new Error('Your session has expired. Please log in again.');
+        }
+        
+        const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.message || 'Failed to remove course');
       }
 
+      // Remove the course from state
       setSavedCourses(prevCourses => prevCourses.filter(course => course._id !== courseId));
+      
+      // Show success message briefly
+      const successMsg = "Course removed successfully!";
+      setError(null);
+      
     } catch (err) {
+      console.error('Error removing course:', err);
       setError(err.message);
+    } finally {
+      setRemovingCourse(null);
     }
   };
 
-  const getCourseImage = (platform) => {
-    switch (platform) {
-      case 'Coursera':
-        return 'https://assets.datamation.com/uploads/2024/04/dm_20240424-coursera-data-analytics-certifications-review.png';
-      case 'Great Learning Academy':
-        return 'https://yt3.googleusercontent.com/ytc/AIdro_m_o6r4liwONXrrjZ2v2ZJ_WlaYXZQF9lrOy3J_aBAWeCU=s900-c-k-c0x00ffffff-no-rj';
-      case 'Google Developers':
+  const handleEnrollNow = (course) => {
+    if (course.url) {
+      window.open(course.url, '_blank');
+    } else {
+      // Fallback search based on course title and platform
+      const searchQuery = encodeURIComponent(`${course.title} ${course.platform}`);
+      window.open(`https://www.google.com/search?q=${searchQuery}`, '_blank');
+    }
+  };
+
+  const getCourseImage = (platform, courseImage) => {
+    // Use course-specific image if available
+    if (courseImage && courseImage !== '') {
+      return courseImage;
+    }
+    
+    // Platform-specific fallback images
+    switch (platform?.toLowerCase()) {
+      case 'coursera':
+        return 'https://d3njjcbhbojbot.cloudfront.net/api/utilities/v1/imageproxy/https://coursera-course-photos.s3.amazonaws.com/fb/e9e8b045b011e682d816c345ce55dd/shutterstock_226881610.jpg';
+      case 'great learning academy':
+        return 'https://www.mygreatlearning.com/static/media/gl-logo-white.6c9c3578.svg';
+      case 'google developers':
         return 'https://developers.google.com/static/site-assets/images/home/developers-social-media.png';
+      case 'udemy':
+        return 'https://img-c.udemycdn.com/course/750x422/placeholder.jpg';
+      case 'edx':
+        return 'https://www.edx.org/images/logos/edx-logo-elm.svg';
       default:
-        return 'https://via.placeholder.com/400x250?text=CourseImage';
+        return 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop&crop=center';
     }
   };
 
   const getLevelColor = (difficulty) => {
     switch (difficulty?.toLowerCase()) {
-      case 'beginner': return 'level-beginner';
-      case 'intermediate': return 'level-intermediate';
-      case 'advanced': return 'level-advanced';
-      default: return 'level-beginner';
+      case 'beginner': return 'bg-green-500';
+      case 'intermediate': return 'bg-yellow-500';
+      case 'advanced': return 'bg-red-500';
+      default: return 'bg-blue-500';
     }
+  };
+
+  const formatDuration = (duration) => {
+    if (!duration) return 'N/A';
+    if (typeof duration === 'string') return duration;
+    return `${duration} hours`;
+  };
+
+  const formatStudentCount = (count) => {
+    if (!count) return '0';
+    if (typeof count === 'number') {
+      return count.toLocaleString();
+    }
+    return count;
+  };
+
+  const handleRetry = () => {
+    fetchSavedCourses();
   };
 
   if (loading) {
     return (
-      <div className="loading-wrapper">
-         <ThreeDotsLoader />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="saved-courses-container">
-        <div className="error-state">
-          <p>❌ {error}</p>
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-500 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg font-medium">Loading your saved courses...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <>
-      <style jsx>{`
-        .saved-courses-container {
-          min-height: 100vh;
-          width:100vw;
-          background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-
-        .header {
-          background: white;
-          padding: 2rem;
-          box-shadow: 0 2px 20px rgba(108, 106, 206, 0.1);
-          border-bottom: 1px solid rgba(108, 106, 206, 0.1);
-          margin-bottom: 2rem;
-        }
-
-        .header-content {
-          max-width: 1200px;
-          margin: 0 auto;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-
-        .header-left {
-          display: flex;
-          align-items: center;
-        }
-
-        .back-button {
-          background: none;
-          border: none;
-          padding: 12px;
-          border-radius: 12px;
-          cursor: pointer;
-          color: #64748b;
-          transition: all 0.3s ease;
-          margin-right: 1rem;
-        }
-
-        .back-button:hover {
-          background-color: #f1f5f9;
-          color: #6c6ace;
-          transform: translateX(-2px);
-        }
-
-        .header-title {
-          font-size: 2.5rem;
-          font-weight: 800;
-          color: #1e293b;
-          margin: 0;
-          background: linear-gradient(135deg, #6c6ace, #8b5cf6);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-
-        .course-count {
-          color: #64748b;
-          font-size: 1.1rem;
-          margin-top: 0.5rem;
-          font-weight: 500;
-        }
-
-        .course-badge {
-          background: linear-gradient(135deg, #6c6ace, #8b5cf6);
-          color: white;
-          padding: 0.75rem 1.5rem;
-          border-radius: 16px;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          font-weight: 600;
-          box-shadow: 0 4px 20px rgba(108, 106, 206, 0.3);
-        }
-
-        .loading-state, .error-state {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          min-height: 60vh;
-          text-align: center;
-        }
-
-        .loading-spinner {
-          width: 48px;
-          height: 48px;
-          border: 4px solid #e2e8f0;
-          border-top: 4px solid #6c6ace;
-          border-radius: 50%;
-          animation: spin 1s linear infinite;
-          margin-bottom: 1rem;
-        }
-
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-
-        .loading-state p, .error-state p {
-          font-size: 1.2rem;
-          color: #64748b;
-          font-weight: 500;
-        }
-
-        .error-state p {
-          background: #fef2f2;
-          border: 1px solid #fecaca;
-          padding: 1rem 2rem;
-          border-radius: 12px;
-          color: #dc2626;
-        }
-
-        .empty-state {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          min-height: 60vh;
-          text-align: center;
-          background: white;
-          margin: 2rem auto;
-          max-width: 500px;
-          padding: 3rem;
-          border-radius: 24px;
-          box-shadow: 0 10px 40px rgba(108, 106, 206, 0.1);
-        }
-
-        .empty-icon {
-          width: 80px;
-          height: 80px;
-          color: #6c6ace;
-          margin-bottom: 2rem;
-          background: rgba(108, 106, 206, 0.1);
-          padding: 20px;
-          border-radius: 50%;
-        }
-
-        .empty-state h3 {
-          font-size: 2rem;
-          font-weight: 700;
-          color: #1e293b;
-          margin-bottom: 1rem;
-        }
-
-        .empty-state p {
-          font-size: 1.1rem;
-          color: #64748b;
-          line-height: 1.6;
-        }
-
-        .saved-courses-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-          gap: 2rem;
-          max-width: 1200px;
-          margin: 0 auto;
-          padding: 0 2rem 2rem;
-        }
-
-        .saved-course-card {
-          background: white;
-          border-radius: 20px;
-          overflow: hidden;
-          box-shadow: 0 8px 30px rgba(108, 106, 206, 0.1);
-          transition: all 0.4s ease;
-          border: 1px solid rgba(108, 106, 206, 0.1);
-        }
-
-        .saved-course-card:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 20px 60px rgba(108, 106, 206, 0.2);
-        }
-
-        .saved-course-image-container {
-          position: relative;
-          height: 200px;
-          overflow: hidden;
-        }
-
-        .saved-course-image {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transition: transform 0.4s ease;
-        }
-
-        .saved-course-card:hover .saved-course-image {
-          transform: scale(1.05);
-        }
-
-        .heart-button {
-          position: absolute;
-          top: 16px;
-          right: 16px;
-          background: rgba(255, 255, 255, 0.9);
-          backdrop-filter: blur(10px);
-          border: none;
-          border-radius: 50%;
-          width: 44px;
-          height: 44px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          color: #6c6ace;
-        }
-
-        .heart-button:hover {
-          background: #6c6ace;
-          color: white;
-          transform: scale(1.1);
-        }
-
-        .heart-button.saved {
-          background: #6c6ace;
-          color: white;
-        }
-
-        .level-badge {
-          position: absolute;
-          bottom: 16px;
-          left: 16px;
-          padding: 0.5rem 1rem;
-          border-radius: 20px;
-          font-size: 0.85rem;
-          font-weight: 600;
-          text-transform: capitalize;
-          backdrop-filter: blur(10px);
-        }
-
-        .level-beginner {
-          background: rgba(34, 197, 94, 0.9);
-          color: white;
-        }
-
-        .level-intermediate {
-          background: rgba(251, 191, 36, 0.9);
-          color: white;
-        }
-
-        .level-advanced {
-          background: rgba(239, 68, 68, 0.9);
-          color: white;
-        }
-
-        .saved-course-content {
-          padding: 1.5rem;
-        }
-
-        .saved-course-header {
-          margin-bottom: 1rem;
-        }
-
-        .saved-course-title {
-          font-size: 1.3rem;
-          font-weight: 700;
-          color: #1e293b;
-          margin-bottom: 0.5rem;
-          line-height: 1.4;
-        }
-
-        .saved-course-instructor {
-          color: #6c6ace;
-          font-weight: 600;
-          font-size: 0.95rem;
-        }
-
-        .saved-course-description {
-          color: #64748b;
-          line-height: 1.6;
-          margin-bottom: 1.5rem;
-          font-size: 0.95rem;
-        }
-
-        .saved-course-stats {
-          display: flex;
-          gap: 1.5rem;
-          margin-bottom: 1.5rem;
-        }
-
-        .stat {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          color: #64748b;
-          font-size: 0.9rem;
-          font-weight: 500;
-        }
-
-        .stat svg {
-          color: #6c6ace;
-        }
-
-        .saved-course-footer {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 1rem;
-          margin-top: 1.5rem;
-          padding-top: 1.5rem;
-          border-top: 1px solid #e2e8f0;
-        }
-
-        .price-text {
-          font-size: 1.2rem;
-          font-weight: 700;
-          color: #6c6ace;
-        }
-
-        .remove-from-saved-button {
-          background: #f1f5f9;
-          color: #64748b;
-          border: none;
-          padding: 0.75rem 1rem;
-          border-radius: 12px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          font-size: 0.9rem;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-        }
-
-        .remove-from-saved-button:hover {
-          background: #fee2e2;
-          color: #dc2626;
-          transform: translateY(-1px);
-        }
-
-        .enroll-button {
-          background: linear-gradient(135deg, #6c6ace, #8b5cf6);
-          color: white;
-          border: none;
-          padding: 0.75rem 1.5rem;
-          border-radius: 12px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          font-size: 0.9rem;
-          box-shadow: 0 4px 15px rgba(108, 106, 206, 0.3);
-        }
-
-        .enroll-button:hover {
-          background: linear-gradient(135deg, #5a58b8, #7c3aed);
-          transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(108, 106, 206, 0.4);
-        }
-
-        @media (max-width: 768px) {
-          .saved-courses-grid {
-            grid-template-columns: 1fr;
-            padding: 0 1rem 2rem;
-          }
-          
-          .header {
-            padding: 1rem;
-          }
-          
-          .header-content {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 1rem;
-          }
-          
-          .header-title {
-            font-size: 2rem;
-          }
-          
-          .saved-course-footer {
-            flex-direction: column;
-            align-items: stretch;
-          }
-          
-          .remove-from-saved-button,
-          .enroll-button {
-            width: 100%;
-            justify-content: center;
-          }
-        }
-      `}</style>
-      
-      <div className="saved-courses-container">
-        <div className="header">
-          <div className="header-content">
-            <div className="header-left">
-              <button onClick={() => window.history.back()} className="back-button">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      {/* Header */}
+      <div className="bg-white shadow-lg border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <button 
+                onClick={() => window.history.back()} 
+                className="p-2 rounded-xl bg-gray-100 hover:bg-indigo-100 text-gray-600 hover:text-indigo-600 transition-all duration-300 hover:scale-105"
+              >
                 <ArrowLeft size={24} />
               </button>
               <div>
-                <h1 className="header-title">My Saved Courses</h1>
-                <p className="course-count">{savedCourses.length} courses saved</p>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  My Saved Courses
+                </h1>
+                <p className="text-gray-600 mt-1">
+                  {savedCourses.length} course{savedCourses.length !== 1 ? 's' : ''} saved
+                </p>
               </div>
             </div>
-            <div className="course-badge">
-              <BookOpen size={20} />
-              <span>{savedCourses.length}</span>
+            
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={handleRetry}
+                className="p-2 rounded-xl bg-gray-100 hover:bg-indigo-100 text-gray-600 hover:text-indigo-600 transition-all duration-300"
+                title="Refresh courses"
+              >
+                <RefreshCw size={20} />
+              </button>
+              <div className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-4 py-2 rounded-xl flex items-center space-x-2 shadow-lg">
+                <BookOpen size={20} />
+                <span className="font-semibold">{savedCourses.length}</span>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
+      {/* Error Message */}
+      {error && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start space-x-3">
+            <AlertCircle className="text-red-500 flex-shrink-0 mt-0.5" size={20} />
+            <div>
+              <p className="text-red-800 font-medium">{error}</p>
+              <button 
+                onClick={handleRetry}
+                className="text-red-600 underline text-sm mt-1 hover:text-red-800"
+              >
+                Try again
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {savedCourses.length === 0 ? (
-          <div className="empty-state">
-            <Heart className="empty-icon" />
-            <h3>No saved courses yet</h3>
-            <p>Start exploring and save courses you're interested in!</p>
+          <div className="text-center py-16">
+            <div className="bg-white rounded-2xl shadow-xl p-12 max-w-md mx-auto">
+              <div className="bg-indigo-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6">
+                <Heart className="text-indigo-600" size={40} />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">No saved courses yet</h3>
+              <p className="text-gray-600 text-lg leading-relaxed">
+                Start exploring our course catalog and save the ones that interest you!
+              </p>
+            </div>
           </div>
         ) : (
-          <div className="saved-courses-grid">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {savedCourses.map(course => (
-              <div key={course._id} className="saved-course-card">
-                <div className="saved-course-image-container">
+              <div key={course._id} className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 overflow-hidden group">
+                {/* Course Image */}
+                <div className="relative h-48 overflow-hidden">
                   <img 
-                    src={getCourseImage(course.platform)} 
+                    src={getCourseImage(course.platform, course.image)} 
                     alt={course.title} 
-                    className="saved-course-image" 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    onError={(e) => {
+                      e.target.src = 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&h=250&fit=crop&crop=center';
+                    }}
                   />
+                  
+                  {/* Remove Button */}
                   <button 
-                    className="heart-button saved"
+                    className={`absolute top-4 right-4 w-10 h-10 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center transition-all duration-300 hover:bg-red-500 hover:text-white group shadow-lg ${
+                      removingCourse === course._id ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
                     onClick={() => handleRemoveCourse(course._id)}
+                    disabled={removingCourse === course._id}
                     title="Remove from saved"
                   >
-                    <Heart fill="currentColor" size={20} />
+                    {removingCourse === course._id ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-gray-400 border-t-transparent"></div>
+                    ) : (
+                      <Heart fill="currentColor" size={18} className="text-red-500 group-hover:text-white" />
+                    )}
                   </button>
-                  <span className={`level-badge ${getLevelColor(course.difficulty)}`}>
-                    {course.difficulty}
-                  </span>
+
+                  {/* Difficulty Badge */}
+                  <div className={`absolute bottom-4 left-4 px-3 py-1 rounded-full text-white text-sm font-semibold ${getLevelColor(course.difficulty)} shadow-lg`}>
+                    {course.difficulty || 'Beginner'}
+                  </div>
                 </div>
 
-                <div className="saved-course-content">
-                  <div className="saved-course-header">
-                    <h3 className="saved-course-title">{course.title}</h3>
-                    <p className="saved-course-instructor">by {course.instructor}</p>
+                {/* Course Content */}
+                <div className="p-6">
+                  <div className="mb-4">
+                    <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-indigo-600 transition-colors">
+                      {course.title}
+                    </h3>
+                    <p className="text-indigo-600 font-semibold text-sm">
+                      by {course.instructor || 'Unknown Instructor'}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {course.platform || 'Online Platform'}
+                    </p>
                   </div>
 
-                  <p className="saved-course-description">{course.description}</p>
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                    {course.description || 'No description available.'}
+                  </p>
 
-                  <div className="saved-course-stats">
-                    <div className="stat">
-                      <Clock size={14} />
-                      <span>{course.duration}</span>
+                  {/* Course Stats */}
+                  <div className="flex items-center justify-between text-sm text-gray-500 mb-6">
+                    <div className="flex items-center space-x-1">
+                      <Clock size={14} className="text-indigo-500" />
+                      <span>{formatDuration(course.duration)}</span>
                     </div>
-                    <div className="stat">
-                      <Star size={14} />
-                      <span>{course.rating}</span>
-                    </div>
-                    <div className="stat">
-                      <Users size={14} />
-                      <span>{course.students?.toLocaleString()}</span>
-                    </div>
+                    
+                    {course.rating && (
+                      <div className="flex items-center space-x-1">
+                        <Star size={14} className="text-yellow-500" />
+                        <span>{course.rating}</span>
+                      </div>
+                    )}
+                    
+                    {course.students && (
+                      <div className="flex items-center space-x-1">
+                        <Users size={14} className="text-green-500" />
+                        <span>{formatStudentCount(course.students)}</span>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="saved-course-footer">
-                    <div className="price">
-                      <span className="price-text">{course.price}</span>
+                  {/* Footer */}
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                    <div className="text-lg font-bold text-indigo-600">
+                      {course.price || 'Free'}
                     </div>
-                    <button 
-                      className="remove-from-saved-button"
-                      onClick={() => handleRemoveCourse(course._id)}
-                    >
-                      <Trash2 size={16} />
-                      Remove
-                    </button>
-                    <button className="enroll-button">
-                      Enroll Now
-                    </button>
+                    
+                    <div className="flex space-x-2">
+                      <button 
+                        className="px-3 py-2 text-sm bg-gray-100 text-gray-600 rounded-lg hover:bg-red-50 hover:text-red-600 transition-all duration-300 flex items-center space-x-1"
+                        onClick={() => handleRemoveCourse(course._id)}
+                        disabled={removingCourse === course._id}
+                      >
+                        <Trash2 size={14} />
+                        <span>Remove</span>
+                      </button>
+                      
+                      <button 
+                        className="px-4 py-2 text-sm bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                        onClick={() => handleEnrollNow(course)}
+                      >
+                        Enroll Now
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -601,7 +372,7 @@ const SavedCourses = () => {
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 };
 
