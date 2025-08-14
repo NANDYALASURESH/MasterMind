@@ -197,9 +197,9 @@ const LoginSignup = () => {
         otpKey: otpData.otpKey,
         otp: otpString
       });
-
+      console.log(res.data.token)
       if (res.data.success) {
-        onSubmitSuccess(res.data.jwtToken);
+        onSubmitSuccess(res.data.token);
       } else {
         setError(res.data.message || 'Invalid OTP');
       }
