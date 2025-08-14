@@ -152,9 +152,7 @@ const LoginSignup = () => {
             otp: ['', '', '', '', '', '']
           }));
           setShowOTPScreen(true);
-        } else if (res.data.success) {
-          onSubmitSuccess(res.data.token);
-        } else {
+        }else {
           setError(res.data.message || 'Login failed');
         }
       } else {

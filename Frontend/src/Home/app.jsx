@@ -38,6 +38,7 @@ const LearningPlatform = () => {
   useEffect(() => {
                     const fetchProfile = async () => {
                 const token = Cookies.get('jwt_token');
+                console.log(token)
                 if (!token) return;
 
                 try {
