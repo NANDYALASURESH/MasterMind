@@ -36,27 +36,27 @@ const LearningPlatform = () => {
   const [savedCourses, setSavedCourses] = useState([]);
 
   useEffect(() => {
-                    const fetchProfile = async () => {
-                const token = Cookies.get('jwt_token');
-                console.log(token)
-                if (!token) return;
+    const fetchProfile = async () => {
+      const token = Cookies.get('jwt_token');
+      console.log(token)
+      if (!token) return;
 
-                try {
-                  const res = await fetch('https://mastermind-2.onrender.com/profile', {
-                    headers: {
-                      Authorization: `Bearer ${token}`,
-                    },
-                  });
-                  if (res.ok) {
-                    const data = await res.json();
-                    setUser(data.user);
-                  } else {
-                    setUser(null);
-                  }
-                } catch (err) {
-                  setUser(null);
-                }
-              };
+      try {
+        const res = await fetch('https://mastermind-2.onrender.com/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.user);
+        } else {
+          setUser(null);
+        }
+      } catch (err) {
+        setUser(null);
+      }
+    };
 
     fetchProfile();
   }, []);
@@ -64,8 +64,8 @@ const LearningPlatform = () => {
   // Track screen size for mobile responsiveness
   useEffect(() => {
     const checkScreenSize = () => {
-          const mobile = window.innerWidth <= 768;
-    setIsMobile(mobile);
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
     };
 
     // Set initial value
@@ -136,7 +136,11 @@ const LearningPlatform = () => {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, []);
 
   // Close notifications popover when clicking outside
@@ -148,8 +152,12 @@ const LearningPlatform = () => {
     };
     if (showNotifications) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
     }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, [showNotifications]);
 
   useEffect(() => {
@@ -241,8 +249,8 @@ const LearningPlatform = () => {
   };
 
   const handleLogout = () => {
-      Cookies.remove('jwt_token');
-      navigate('/login');
+    Cookies.remove('jwt_token');
+    navigate('/login');
   };
 
   // Toggle save/unsave course
@@ -317,12 +325,26 @@ const LearningPlatform = () => {
     setVisibleCount(10);
   }, [searchQuery, filters, filteredCourses.length]);
 
+  // Handle user menu toggle
+  const handleUserMenuToggle = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowUserMenu(prev => !prev);
+  };
+
+  // Handle notification toggle
+  const handleNotificationToggle = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowNotifications(prev => !prev);
+  };
+
   // Loading state
   if (loading) {
     return (
       <div style={{
         minHeight: '100vh',
-        width:"100vw",
+        width: "100vw",
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         display: 'flex',
         alignItems: 'center',
@@ -377,8 +399,7 @@ const LearningPlatform = () => {
   return (
     <div style={{
       minHeight: '100vh',
-        width:"100vw",
-
+      width: "100vw",
       backgroundColor: '#f8fafc',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
     }}>
@@ -397,415 +418,854 @@ const LearningPlatform = () => {
           margin: '0 auto',
           padding: '16px 24px'
         }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '24px',
-            flexWrap: 'wrap'
-          }}>
-            {/* Logo */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+          {/* Mobile Layout */}
+          {isMobile ? (
+            <div>
+              {/* Top row - Logo and Right controls */}
               <div style={{
-                width: '40px',
-                height: '40px',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                borderRadius: '12px',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center'
+                justifyContent: 'space-between',
+                marginBottom: '16px'
               }}>
-                <BookOpen size={20} color="white" />
-              </div>
-              <h1 style={{
-                fontSize: '24px',
-                fontWeight: '700',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                margin: 0,
-                '@media (max-width: 768px)': {
-                  fontSize: '20px'
-                }
-              }} className="brand-title">
-                MasterMind
-              </h1>
-            </div>
-
-            {/* Search Bar */}
-            <div style={{
-              flex: 1,
-              maxWidth: '500px',
-              position: 'relative',
-              minWidth: '200px',
-              '@media (max-width: 768px)': {
-                order: 3,
-                flex: '1 1 100%',
-                maxWidth: 'none',
-                marginTop: '16px'
-              }
-            }} className="search-container">
-              <div style={{
-                position: 'relative',
-                display: 'flex',
-                alignItems: 'center'
-              }}>
-                <Search
-                  size={20}
-                  style={{
-                    position: 'absolute',
-                    left: '16px',
-                    color: '#9ca3af',
-                    zIndex: 10
-                  }}
-                />
-                <input
-                  type="text"
-                  placeholder="Search courses, topics, or instructors..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '14px 16px 14px 48px',
-                    fontSize: '16px',
-                    border: '2px solid #e2e8f0',
+                {/* Logo */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                     borderRadius: '12px',
-                    backgroundColor: '#ffffff',
-                    color: '#1e293b',
-                    outline: 'none',
-                    transition: 'all 0.2s ease',
-                    '@media (max-width: 768px)': {
-                      fontSize: '14px',
-                      padding: '12px 16px 12px 44px'
-                    }
-                  }}
-                  className="search-input"
-                  onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                  onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                />
-              </div>
-            </div>
-
-            {/* Right Section */}
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '16px',
-                              flexShrink: 0,
-                '@media (max-width: 768px)': {
-                  gap: '12px'
-                }
-            }} className="right-section">
-              {/* Notifications */}
-              <div style={{ position: 'relative' }} ref={notificationRef}>
-                <button style={{
-                  position: 'relative',
-                  padding: '12px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  backgroundColor: '#f1f5f9',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-                onClick={() => setShowNotifications((v) => !v)}
-                onMouseOver={(e) => e.target.style.backgroundColor = '#e2e8f0'}
-                onMouseOut={(e) => e.target.style.backgroundColor = '#f1f5f9'}
-                >
-                  <Bell size={20} color="#64748b" />
-                  {notifications > 0 && (
-                    <span style={{
-                      position: 'absolute',
-                      top: '6px',
-                      right: '6px',
-                      width: '18px',
-                      height: '18px',
-                      backgroundColor: '#ef4444',
-                      color: 'white',
-                      borderRadius: '50%',
-                      fontSize: '12px',
-                      fontWeight: '600',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      {notifications}
-                    </span>
-                  )}
-                </button>
-                {showNotifications && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '110%',
-                    right: 0,
-                    minWidth: '320px',
-                    background: 'rgba(255,255,255,0.98)',
-                    borderRadius: '16px',
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-                    border: '1px solid #e2e8f0',
-                    zIndex: 100,
-                    padding: '0',
-                    overflow: 'hidden'
-                  }}>
-
-                    <div style={{ maxHeight: '260px', overflowY: 'auto', background: 'white' }}>
-                      {notificationList.length === 0 ? (
-                        <div style={{ padding: '24px', color: '#64748b', textAlign: 'center' }}>
-                          No notifications
-                        </div>
-                      ) : (
-                        notificationList.map(n => (
-                          <div key={n.id} style={{
-                            padding: '16px 20px',
-                            borderBottom: '1px solid #f1f5f9',
-                            fontSize: '15px',
-                            color: '#374151',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between'
-                          }}>
-                            <span>{n.text}</span>
-                            <span style={{ fontSize: '12px', color: '#64748b', marginLeft: '12px', whiteSpace: 'nowrap' }}>{n.time}</span>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Filters Button */}
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  padding: '12px 16px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  backgroundColor: showFilters ? '#667eea' : '#f1f5f9',
-                  color: showFilters ? 'white' : '#64748b',
-                  cursor: 'pointer',
-                  fontSize: '14px',
-                  fontWeight: '600',
-                  transition: 'all 0.2s ease',
-                  position: 'relative'
-                }}
-              >
-                <Filter size={16} />
-                <span>Filters</span>
-                {getActiveFiltersCount() > 0 && (
-                  <span style={{
-                    backgroundColor: showFilters ? 'rgba(255,255,255,0.2)' : '#ef4444',
-                    color: showFilters ? 'white' : 'white',
-                    padding: '2px 6px',
-                    borderRadius: '10px',
-                    fontSize: '12px',
-                    fontWeight: '700'
-                  }}>
-                    {getActiveFiltersCount()}
-                  </span>
-                )}
-              </button>
-
-
-
-              {/* User Profile Dropdown */}
-              <div style={{ position: 'relative' }} ref={userMenuRef}>
-                {user ? (
-                  <button
-                    onClick={() => setShowUserMenu(!showUserMenu)}
-                    onTouchEnd={(e) => {
-                      e.preventDefault();
-                      setShowUserMenu(!showUserMenu);
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '8px',
-                      borderRadius: '12px',
-                      border: 'none',
-                      backgroundColor: showUserMenu ? '#f1f5f9' : 'transparent',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      WebkitTapHighlightColor: 'transparent'
-                    }}
-                  >
-                    <img
-                      src={user.avatar || "https://ui-avatars.com/api/?name=" + (user.username || "U")}
-                      alt={user.name || user.username || "User"}
-                      style={{
-                        width: '36px',
-                        height: '36px',
-                        borderRadius: '50%',
-                        objectFit: 'cover',
-                        border: '2px solid #e2e8f0'
-                      }}
-                    />
-                    <ChevronDown
-                      size={16}
-                      color="#64748b"
-                      style={{
-                        transform: showUserMenu ? 'rotate(180deg)' : 'rotate(0deg)',
-                        transition: 'transform 0.2s ease'
-                      }}
-                    />
-                  </button>
-                ) : (
-                  <div style={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '50%',
-                    background: '#e2e8f0',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}>
-                    <User size={20} color="#64748b" />
+                    <BookOpen size={20} color="white" />
                   </div>
-                )}
+                  <h1 style={{
+                    fontSize: '20px',
+                    fontWeight: '700',
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    margin: 0
+                  }}>
+                    MasterMind
+                  </h1>
+                </div>
 
-                {/* User Dropdown Menu */}
-                {showUserMenu && user && (
-                  <>
-                    {/* Mobile Backdrop Overlay */}
-                    {isMobile && (
-                      <div 
-                        style={{
-                          position: 'fixed',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                          zIndex: 9999
-                        }} 
-                        onClick={() => setShowUserMenu(false)}
-                        onTouchEnd={(e) => {
-                          e.preventDefault();
-                          setShowUserMenu(false);
-                        }}
-                      />
+                {/* Right controls */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  {/* Notifications */}
+                  <div style={{ position: 'relative' }} ref={notificationRef}>
+                    <button 
+                      style={{
+                        position: 'relative',
+                        padding: '12px',
+                        borderRadius: '12px',
+                        border: 'none',
+                        backgroundColor: '#f1f5f9',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease',
+                        WebkitTapHighlightColor: 'transparent'
+                      }}
+                      onClick={handleNotificationToggle}
+                      onTouchStart={(e) => e.currentTarget.style.backgroundColor = '#e2e8f0'}
+                      onTouchEnd={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+                    >
+                      <Bell size={20} color="#64748b" />
+                      {notifications > 0 && (
+                        <span style={{
+                          position: 'absolute',
+                          top: '6px',
+                          right: '6px',
+                          width: '18px',
+                          height: '18px',
+                          backgroundColor: '#ef4444',
+                          color: 'white',
+                          borderRadius: '50%',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          {notifications}
+                        </span>
+                      )}
+                    </button>
+                    {showNotifications && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '110%',
+                        right: 0,
+                        minWidth: '280px',
+                        background: 'rgba(255,255,255,0.98)',
+                        borderRadius: '16px',
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                        border: '1px solid #e2e8f0',
+                        zIndex: 100,
+                        padding: '0',
+                        overflow: 'hidden'
+                      }}>
+                        <div style={{ maxHeight: '260px', overflowY: 'auto', background: 'white' }}>
+                          {notificationList.length === 0 ? (
+                            <div style={{ padding: '24px', color: '#64748b', textAlign: 'center' }}>
+                              No notifications
+                            </div>
+                          ) : (
+                            notificationList.map(n => (
+                              <div key={n.id} style={{
+                                padding: '16px 20px',
+                                borderBottom: '1px solid #f1f5f9',
+                                fontSize: '15px',
+                                color: '#374151',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between'
+                              }}>
+                                <span>{n.text}</span>
+                                <span style={{ fontSize: '12px', color: '#64748b', marginLeft: '12px', whiteSpace: 'nowrap' }}>{n.time}</span>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
                     )}
-                    <div style={{
-                      position: isMobile ? 'fixed' : 'absolute',
-                      top: isMobile ? 'auto' : '100%',
-                      bottom: isMobile ? '20px' : 'auto',
-                      left: isMobile ? '20px' : 'auto',
-                      right: isMobile ? '20px' : 0,
-                      marginTop: isMobile ? '0' : '8px',
-                      backgroundColor: 'rgba(255, 255, 255, 0.98)',
-                      backdropFilter: 'blur(20px)',
-                      borderRadius: '16px',
-                      boxShadow: isMobile ? '0 25px 50px rgba(0, 0, 0, 0.25)' : '0 25px 50px rgba(0, 0, 0, 0.15)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      minWidth: isMobile ? 'auto' : '280px',
-                      maxWidth: isMobile ? 'none' : '320px',
-                      width: isMobile ? 'calc(100vw - 40px)' : 'auto',
-                      zIndex: 10000,
-                      overflow: 'hidden',
-                      transform: 'translateZ(0)'
-                    }} className="user-dropdown">
-                    {/* User Info Header */}
-                    <div style={{
-                      padding: '20px',
-                      borderBottom: '1px solid #e2e8f0',
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      color: 'white'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  </div>
+
+                  {/* Filters Button */}
+                  <button
+                    onClick={() => setShowFilters(!showFilters)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '10px 14px',
+                      borderRadius: '12px',
+                      border: 'none',
+                      backgroundColor: showFilters ? '#667eea' : '#f1f5f9',
+                      color: showFilters ? 'white' : '#64748b',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '600',
+                      transition: 'all 0.2s ease',
+                      position: 'relative',
+                      WebkitTapHighlightColor: 'transparent'
+                    }}
+                    onTouchStart={(e) => {
+                      if (!showFilters) e.currentTarget.style.backgroundColor = '#e2e8f0';
+                    }}
+                    onTouchEnd={(e) => {
+                      if (!showFilters) e.currentTarget.style.backgroundColor = '#f1f5f9';
+                    }}
+                  >
+                    <Filter size={14} />
+                    <span>Filters</span>
+                    {getActiveFiltersCount() > 0 && (
+                      <span style={{
+                        backgroundColor: showFilters ? 'rgba(255,255,255,0.2)' : '#ef4444',
+                        color: 'white',
+                        padding: '2px 6px',
+                        borderRadius: '10px',
+                        fontSize: '12px',
+                        fontWeight: '700'
+                      }}>
+                        {getActiveFiltersCount()}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* User Profile */}
+                  <div style={{ position: 'relative' }} ref={userMenuRef}>
+                    {user ? (
+                      <button
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          padding: '6px',
+                          borderRadius: '12px',
+                          border: 'none',
+                          backgroundColor: showUserMenu ? '#f1f5f9' : 'transparent',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          WebkitTapHighlightColor: 'transparent'
+                        }}
+                        onClick={handleUserMenuToggle}
+                        onTouchStart={(e) => {
+                          if (!showUserMenu) e.currentTarget.style.backgroundColor = '#f1f5f9';
+                        }}
+                        onTouchEnd={(e) => {
+                          if (!showUserMenu) e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
+                      >
                         <img
                           src={user.avatar || "https://ui-avatars.com/api/?name=" + (user.username || "U")}
                           alt={user.name || user.username || "User"}
                           style={{
-                            width: '36px',
-                            height: '36px',
+                            width: '32px',
+                            height: '32px',
                             borderRadius: '50%',
                             objectFit: 'cover',
                             border: '2px solid #e2e8f0'
                           }}
                         />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ 
-                            fontWeight: 700, 
-                            fontSize: '14px',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}>
-                            {user.name || user.username || "User"}
-                          </div>
-                          <div style={{ 
-                            fontSize: '12px', 
-                            color: '#e0e7ef',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}>
-                            {user.email || ""}
-                          </div>
-                        </div>
+                        <ChevronDown
+                          size={14}
+                          color="#64748b"
+                          style={{
+                            transform: showUserMenu ? 'rotate(180deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.2s ease'
+                          }}
+                        />
+                      </button>
+                    ) : (
+                      <div style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        background: '#e2e8f0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <User size={18} color="#64748b" />
                       </div>
-                    </div>
+                    )}
 
-                    {/* Stats */}
-                    <div style={{
-                      padding: '16px 20px',
-                      borderBottom: '1px solid #e2e8f0',
-                      backgroundColor: '#f8fafc'
-                    }}>
-                      <div style={{ 
-                        display: 'grid', 
-                        gridTemplateColumns: '1fr 1fr 1fr', 
-                        gap: '16px', 
-                        textAlign: 'center',
-                        '@media (max-width: 480px)': {
-                          gridTemplateColumns: '1fr 1fr',
-                          gap: '12px'
-                        }
-                      }} className="user-stats">
-                        <div>
-                          <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
-                            {user.completedCourses || 0}
-                          </div>
-                          <div style={{ fontSize: '12px', color: '#64748b' }}>Completed</div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
-                            {user.savedCourses || 0}
-                          </div>
-                          <div style={{ fontSize: '12px', color: '#64748b' }}>Saved</div>
-                        </div>
+                    {/* User Dropdown Menu */}
+                    {showUserMenu && user && (
+                      <>
+                        {/* Mobile Backdrop Overlay */}
+                        <div 
+                          style={{
+                            position: 'fixed',
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                            zIndex: 9999
+                          }} 
+                          onClick={() => setShowUserMenu(false)}
+                          onTouchEnd={(e) => {
+                            e.preventDefault();
+                            setShowUserMenu(false);
+                          }}
+                        />
                         <div style={{
-                          '@media (max-width: 480px)': {
-                            gridColumn: '1 / -1'
-                          }
-                        }} className="learning-hours">
-                          <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
-                            {user.totalHours || 0}h
+                          position: 'fixed',
+                          bottom: '20px',
+                          left: '20px',
+                          right: '20px',
+                          backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                          backdropFilter: 'blur(20px)',
+                          borderRadius: '16px',
+                          boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)',
+                          border: '1px solid rgba(255, 255, 255, 0.2)',
+                          zIndex: 10000,
+                          overflow: 'hidden',
+                          transform: 'translateZ(0)'
+                        }}>
+                          {/* User Info Header */}
+                          <div style={{
+                            padding: '20px',
+                            borderBottom: '1px solid #e2e8f0',
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            color: 'white'
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <img
+                                src={user.avatar || "https://ui-avatars.com/api/?name=" + (user.username || "U")}
+                                alt={user.name || user.username || "User"}
+                                style={{
+                                  width: '36px',
+                                  height: '36px',
+                                  borderRadius: '50%',
+                                  objectFit: 'cover',
+                                  border: '2px solid #e2e8f0'
+                                }}
+                              />
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ 
+                                  fontWeight: 700, 
+                                  fontSize: '14px',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap'
+                                }}>
+                                  {user.name || user.username || "User"}
+                                </div>
+                                <div style={{ 
+                                  fontSize: '12px', 
+                                  color: '#e0e7ef',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap'
+                                }}>
+                                  {user.email || ""}
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                          <div style={{ fontSize: '12px', color: '#64748b' }}>Learning</div>
+
+                          {/* Stats */}
+                          <div style={{
+                            padding: '16px 20px',
+                            borderBottom: '1px solid #e2e8f0',
+                            backgroundColor: '#f8fafc'
+                          }}>
+                            <div style={{ 
+                              display: 'grid', 
+                              gridTemplateColumns: '1fr 1fr', 
+                              gap: '12px', 
+                              textAlign: 'center'
+                            }}>
+                              <div>
+                                <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
+                                  {user.completedCourses || 0}
+                                </div>
+                                <div style={{ fontSize: '12px', color: '#64748b' }}>Completed</div>
+                              </div>
+                              <div>
+                                <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
+                                  {user.savedCourses || 0}
+                                </div>
+                                <div style={{ fontSize: '12px', color: '#64748b' }}>Saved</div>
+                              </div>
+                              <div style={{ gridColumn: '1 / -1' }}>
+                                <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
+                                  {user.totalHours || 0}h
+                                </div>
+                                <div style={{ fontSize: '12px', color: '#64748b' }}>Learning</div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Menu Items */}
+                          <div style={{ padding: '8px 0' }}>
+                            {[
+                              { icon: User, label: 'Profile', color: '#64748b' },
+                              {
+                                icon: Heart,
+                                label: 'Saved Courses',
+                                color: '#ef4444',
+                                isSaved: savedCourses.length > 0
+                              },
+                              { icon: Award, label: 'Certificates', color: '#f59e0b' },
+                              { icon: Settings, label: 'Settings', color: '#64748b' }
+                            ].map((item, index) => (
+                              <button
+                                key={index}
+                                style={{
+                                  width: '100%',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '12px',
+                                  padding: '12px 20px',
+                                  border: 'none',
+                                  backgroundColor: 'transparent',
+                                  color: '#374151',
+                                  fontSize: '14px',
+                                  fontWeight: '500',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s ease',
+                                  textAlign: 'left',
+                                  WebkitTapHighlightColor: 'transparent'
+                                }}
+                                onClick={() => {
+                                  if (item.label === 'Saved Courses') {
+                                    navigate('/saved-courses');
+                                  }
+                                  setShowUserMenu(false);
+                                }}
+                                onTouchStart={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+                                onTouchEnd={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                              >
+                                {item.label === 'Saved Courses' ? (
+                                  <Heart
+                                    size={16}
+                                    color="#ef4444"
+                                    fill={savedCourses.length > 0 ? "#ef4444" : "none"}
+                                    style={{ transition: 'all 0.2s' }}
+                                  />
+                                ) : (
+                                  <item.icon size={16} color={item.color} />
+                                )}
+                                {item.label}
+                              </button>
+                            ))}
+
+                            <div style={{ height: '1px', backgroundColor: '#e2e8f0', margin: '8px 0' }} />
+
+                            <button
+                              onClick={handleLogout}
+                              style={{
+                                width: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px',
+                                padding: '12px 20px',
+                                border: 'none',
+                                backgroundColor: 'transparent',
+                                color: '#ef4444',
+                                fontSize: '14px',
+                                fontWeight: '500',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                textAlign: 'left',
+                                WebkitTapHighlightColor: 'transparent'
+                              }}
+                              onTouchStart={(e) => e.currentTarget.style.backgroundColor = '#fef2f2'}
+                              onTouchEnd={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                            >
+                              <LogOut size={16} />
+                              Logout
+                            </button>
+                          </div>
                         </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Search Bar - Full width on mobile */}
+              <div style={{ position: 'relative' }}>
+                <div style={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+                  <Search
+                    size={20}
+                    style={{
+                      position: 'absolute',
+                      left: '16px',
+                      color: '#9ca3af',
+                      zIndex: 10
+                    }}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Search courses, topics, or instructors..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px 12px 44px',
+                      fontSize: '14px',
+                      border: '2px solid #e2e8f0',
+                      borderRadius: '12px',
+                      backgroundColor: '#ffffff',
+                      color: '#1e293b',
+                      outline: 'none',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                  />
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* Desktop Layout */
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '24px',
+              flexWrap: 'wrap'
+            }}>
+              {/* Logo */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <BookOpen size={20} color="white" />
+                </div>
+                <h1 style={{
+                  fontSize: '24px',
+                  fontWeight: '700',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  margin: 0
+                }}>
+                  MasterMind
+                </h1>
+              </div>
+
+              {/* Search Bar */}
+              <div style={{
+                flex: 1,
+                maxWidth: '500px',
+                position: 'relative',
+                minWidth: '200px'
+              }}>
+                <div style={{
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+                  <Search
+                    size={20}
+                    style={{
+                      position: 'absolute',
+                      left: '16px',
+                      color: '#9ca3af',
+                      zIndex: 10
+                    }}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Search courses, topics, or instructors..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '14px 16px 14px 48px',
+                      fontSize: '16px',
+                      border: '2px solid #e2e8f0',
+                      borderRadius: '12px',
+                      backgroundColor: '#ffffff',
+                      color: '#1e293b',
+                      outline: 'none',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                  />
+                </div>
+              </div>
+
+              {/* Right Section */}
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '16px',
+                flexShrink: 0
+              }}>
+                {/* Notifications */}
+                <div style={{ position: 'relative' }} ref={notificationRef}>
+                  <button style={{
+                    position: 'relative',
+                    padding: '12px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    backgroundColor: '#f1f5f9',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onClick={handleNotificationToggle}
+                  onMouseOver={(e) => e.target.style.backgroundColor = '#e2e8f0'}
+                  onMouseOut={(e) => e.target.style.backgroundColor = '#f1f5f9'}
+                  >
+                    <Bell size={20} color="#64748b" />
+                    {notifications > 0 && (
+                      <span style={{
+                        position: 'absolute',
+                        top: '6px',
+                        right: '6px',
+                        width: '18px',
+                        height: '18px',
+                        backgroundColor: '#ef4444',
+                        color: 'white',
+                        borderRadius: '50%',
+                        fontSize: '12px',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        {notifications}
+                      </span>
+                    )}
+                  </button>
+                  {showNotifications && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '110%',
+                      right: 0,
+                      minWidth: '320px',
+                      background: 'rgba(255,255,255,0.98)',
+                      borderRadius: '16px',
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                      border: '1px solid #e2e8f0',
+                      zIndex: 100,
+                      padding: '0',
+                      overflow: 'hidden'
+                    }}>
+                      <div style={{ maxHeight: '260px', overflowY: 'auto', background: 'white' }}>
+                        {notificationList.length === 0 ? (
+                          <div style={{ padding: '24px', color: '#64748b', textAlign: 'center' }}>
+                            No notifications
+                          </div>
+                        ) : (
+                          notificationList.map(n => (
+                            <div key={n.id} style={{
+                              padding: '16px 20px',
+                              borderBottom: '1px solid #f1f5f9',
+                              fontSize: '15px',
+                              color: '#374151',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between'
+                            }}>
+                              <span>{n.text}</span>
+                              <span style={{ fontSize: '12px', color: '#64748b', marginLeft: '12px', whiteSpace: 'nowrap' }}>{n.time}</span>
+                            </div>
+                          ))
+                        )}
                       </div>
                     </div>
+                  )}
+                </div>
 
-                    {/* Menu Items */}
-                    <div style={{ padding: '8px 0' }}>
-                      {[
-                        { icon: User, label: 'Profile', color: '#64748b' },
-                        {
-                          icon: Heart,
-                          label: 'Saved Courses',
-                          color: '#ef4444',
-                          isSaved: savedCourses.length > 0
-                        },
-                        { icon: Award, label: 'Certificates', color: '#f59e0b' },
-                        { icon: Settings, label: 'Settings', color: '#64748b' }
-                      ].map((item, index) => (
+                {/* Filters Button */}
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '12px 16px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    backgroundColor: showFilters ? '#667eea' : '#f1f5f9',
+                    color: showFilters ? 'white' : '#64748b',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    transition: 'all 0.2s ease',
+                    position: 'relative'
+                  }}
+                >
+                  <Filter size={16} />
+                  <span>Filters</span>
+                  {getActiveFiltersCount() > 0 && (
+                    <span style={{
+                      backgroundColor: showFilters ? 'rgba(255,255,255,0.2)' : '#ef4444',
+                      color: showFilters ? 'white' : 'white',
+                      padding: '2px 6px',
+                      borderRadius: '10px',
+                      fontSize: '12px',
+                      fontWeight: '700'
+                    }}>
+                      {getActiveFiltersCount()}
+                    </span>
+                  )}
+                </button>
+
+                {/* User Profile Dropdown */}
+                <div style={{ position: 'relative' }} ref={userMenuRef}>
+                  {user ? (
+                    <button
+                      onClick={handleUserMenuToggle}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '8px',
+                        borderRadius: '12px',
+                        border: 'none',
+                        backgroundColor: showUserMenu ? '#f1f5f9' : 'transparent',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <img
+                        src={user.avatar || "https://ui-avatars.com/api/?name=" + (user.username || "U")}
+                        alt={user.name || user.username || "User"}
+                        style={{
+                          width: '36px',
+                          height: '36px',
+                          borderRadius: '50%',
+                          objectFit: 'cover',
+                          border: '2px solid #e2e8f0'
+                        }}
+                      />
+                      <ChevronDown
+                        size={16}
+                        color="#64748b"
+                        style={{
+                          transform: showUserMenu ? 'rotate(180deg)' : 'rotate(0deg)',
+                          transition: 'transform 0.2s ease'
+                        }}
+                      />
+                    </button>
+                  ) : (
+                    <div style={{
+                      width: '36px',
+                      height: '36px',
+                      borderRadius: '50%',
+                      background: '#e2e8f0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
+                      <User size={20} color="#64748b" />
+                    </div>
+                  )}
+
+                  {/* Desktop User Dropdown Menu */}
+                  {showUserMenu && user && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '100%',
+                      right: 0,
+                      marginTop: '8px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                      backdropFilter: 'blur(20px)',
+                      borderRadius: '16px',
+                      boxShadow: '0 25px 50px rgba(0, 0, 0, 0.15)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
+                      minWidth: '280px',
+                      maxWidth: '320px',
+                      zIndex: 10000,
+                      overflow: 'hidden',
+                      transform: 'translateZ(0)'
+                    }}>
+                      {/* User Info Header */}
+                      <div style={{
+                        padding: '20px',
+                        borderBottom: '1px solid #e2e8f0',
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        color: 'white'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <img
+                            src={user.avatar || "https://ui-avatars.com/api/?name=" + (user.username || "U")}
+                            alt={user.name || user.username || "User"}
+                            style={{
+                              width: '36px',
+                              height: '36px',
+                              borderRadius: '50%',
+                              objectFit: 'cover',
+                              border: '2px solid #e2e8f0'
+                            }}
+                          />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ 
+                              fontWeight: 700, 
+                              fontSize: '14px',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}>
+                              {user.name || user.username || "User"}
+                            </div>
+                            <div style={{ 
+                              fontSize: '12px', 
+                              color: '#e0e7ef',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}>
+                              {user.email || ""}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Stats */}
+                      <div style={{
+                        padding: '16px 20px',
+                        borderBottom: '1px solid #e2e8f0',
+                        backgroundColor: '#f8fafc'
+                      }}>
+                        <div style={{ 
+                          display: 'grid', 
+                          gridTemplateColumns: '1fr 1fr 1fr', 
+                          gap: '16px', 
+                          textAlign: 'center'
+                        }}>
+                          <div>
+                            <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
+                              {user.completedCourses || 0}
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>Completed</div>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
+                              {user.savedCourses || 0}
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>Saved</div>
+                          </div>
+                          <div>
+                            <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
+                              {user.totalHours || 0}h
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>Learning</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Menu Items */}
+                      <div style={{ padding: '8px 0' }}>
+                        {[
+                          { icon: User, label: 'Profile', color: '#64748b' },
+                          {
+                            icon: Heart,
+                            label: 'Saved Courses',
+                            color: '#ef4444',
+                            isSaved: savedCourses.length > 0
+                          },
+                          { icon: Award, label: 'Certificates', color: '#f59e0b' },
+                          { icon: Settings, label: 'Settings', color: '#64748b' }
+                        ].map((item, index) => (
+                          <button
+                            key={index}
+                            style={{
+                              width: '100%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '12px',
+                              padding: '12px 20px',
+                              border: 'none',
+                              backgroundColor: 'transparent',
+                              color: '#374151',
+                              fontSize: '14px',
+                              fontWeight: '500',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              textAlign: 'left'
+                            }}
+                            onClick={() => {
+                              if (item.label === 'Saved Courses') {
+                                navigate('/saved-courses');
+                              }
+                              setShowUserMenu(false);
+                            }}
+                            onMouseOver={(e) => e.target.style.backgroundColor = '#f1f5f9'}
+                            onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
+                          >
+                            {item.label === 'Saved Courses' ? (
+                              <Heart
+                                size={16}
+                                color="#ef4444"
+                                fill={savedCourses.length > 0 ? "#ef4444" : "none"}
+                                style={{ transition: 'all 0.2s' }}
+                              />
+                            ) : (
+                              <item.icon size={16} color={item.color} />
+                            )}
+                            {item.label}
+                          </button>
+                        ))}
+
+                        <div style={{ height: '1px', backgroundColor: '#e2e8f0', margin: '8px 0' }} />
+
                         <button
-                          key={index}
+                          onClick={handleLogout}
                           style={{
                             width: '100%',
                             display: 'flex',
@@ -814,95 +1274,26 @@ const LearningPlatform = () => {
                             padding: '12px 20px',
                             border: 'none',
                             backgroundColor: 'transparent',
-                            color: '#374151',
+                            color: '#ef4444',
                             fontSize: '14px',
                             fontWeight: '500',
                             cursor: 'pointer',
                             transition: 'all 0.2s ease',
                             textAlign: 'left'
                           }}
-                          onClick={() => {
-                            if (item.label === 'Saved Courses') {
-                              navigate('/saved-courses');
-                            } else if (item.label === 'Profile') {
-                              // Navigate to profile page or show profile modal
-                              // You can add navigation to a profile page here
-                            } else if (item.label === 'Settings') {
-                              // Navigate to settings page or show settings modal
-                              // You can add navigation to a settings page here
-                            } else if (item.label === 'Certificates') {
-                              // Navigate to certificates page
-                              // You can add navigation to a certificates page here
-                            }
-                            setShowUserMenu(false); // Close menu after click
-                          }}
-                          onTouchEnd={(e) => {
-                            e.preventDefault();
-                            if (item.label === 'Saved Courses') {
-                              navigate('/saved-courses');
-                            } else if (item.label === 'Profile') {
-                              // Handle profile click
-                            } else if (item.label === 'Settings') {
-                              // Handle settings click
-                            } else if (item.label === 'Certificates') {
-                              // Handle certificates click
-                            }
-                            setShowUserMenu(false);
-                          }}
-                          onMouseOver={(e) => e.target.style.backgroundColor = '#f1f5f9'}
+                          onMouseOver={(e) => e.target.style.backgroundColor = '#fef2f2'}
                           onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
                         >
-                          {item.label === 'Saved Courses' ? (
-                            <Heart
-                              size={16}
-                              color="#ef4444"
-                              fill={savedCourses.length > 0 ? "#ef4444" : "none"}
-                              style={{ transition: 'all 0.2s' }}
-                            />
-                          ) : (
-                            <item.icon size={16} color={item.color} />
-                          )}
-                          {item.label}
+                          <LogOut size={16} />
+                          Logout
                         </button>
-                      ))}
-
-                      <div style={{ height: '1px', backgroundColor: '#e2e8f0', margin: '8px 0' }} />
-
-                      <button
-                        onClick={handleLogout}
-                        onTouchEnd={(e) => {
-                          e.preventDefault();
-                          handleLogout();
-                        }}
-                        style={{
-                          width: '100%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          padding: '12px 20px',
-                          border: 'none',
-                          backgroundColor: 'transparent',
-                          color: '#ef4444',
-                          fontSize: '14px',
-                          fontWeight: '500',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          textAlign: 'left',
-                          WebkitTapHighlightColor: 'transparent'
-                        }}
-                        onMouseOver={(e) => e.target.style.backgroundColor = '#fef2f2'}
-                        onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
-                      >
-                        <LogOut size={16} />
-                        Logout
-                      </button>
+                      </div>
                     </div>
-                  </div>
-                </>
-                )}
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </header>
 
@@ -921,7 +1312,7 @@ const LearningPlatform = () => {
           }}>
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(200px, 1fr))',
               gap: '20px',
               alignItems: 'end'
             }}>
@@ -1046,11 +1437,11 @@ const LearningPlatform = () => {
       <main style={{
         maxWidth: '1400px',
         margin: '0 auto',
-        padding: '32px 24px'
+        padding: isMobile ? '24px 16px' : '32px 24px'
       }}>
         <div style={{ marginBottom: '32px' }}>
           <h2 style={{
-            fontSize: '28px',
+            fontSize: isMobile ? '24px' : '28px',
             fontWeight: '700',
             color: '#1e293b',
             margin: 0
@@ -1062,7 +1453,7 @@ const LearningPlatform = () => {
         {filteredCourses.length === 0 ? (
           <div style={{
             textAlign: 'center',
-            padding: '80px 20px',
+            padding: isMobile ? '60px 20px' : '80px 20px',
             backgroundColor: 'rgba(255, 255, 255, 0.6)',
             borderRadius: '16px',
             border: '1px solid #e2e8f0'
@@ -1080,7 +1471,7 @@ const LearningPlatform = () => {
               <Search size={32} color="#64748b" />
             </div>
             <h3 style={{
-              fontSize: '24px',
+              fontSize: isMobile ? '20px' : '24px',
               fontWeight: '600',
               color: '#1e293b',
               margin: '0 0 8px 0'
@@ -1099,21 +1490,9 @@ const LearningPlatform = () => {
           <>
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
-              gap: '24px',
-              '@media (max-width: 1200px)': {
-                gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-                gap: '20px'
-              },
-              '@media (max-width: 768px)': {
-                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                gap: '16px'
-              },
-              '@media (max-width: 480px)': {
-                gridTemplateColumns: '1fr',
-                gap: '16px'
-              }
-            }} className="courses-grid">
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(380px, 1fr))',
+              gap: isMobile ? '16px' : '24px'
+            }}>
               {filteredCourses.slice(0, visibleCount).map(course => (
                 <div key={course._id} style={{
                   backgroundColor: 'rgba(255, 255, 255, 0.8)',
@@ -1126,12 +1505,16 @@ const LearningPlatform = () => {
                   cursor: 'pointer'
                 }}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.15)';
+                  if (!isMobile) {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.15)';
+                  }
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0px)';
-                  e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.08)';
+                  if (!isMobile) {
+                    e.currentTarget.style.transform = 'translateY(0px)';
+                    e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.08)';
+                  }
                 }}
                 >
                   {/* Course Image */}
@@ -1185,6 +1568,7 @@ const LearningPlatform = () => {
                         {course.difficulty}
                       </span>
                     </div>
+                    {/* Save Button
                     {/* Save Button */}
                     <button
   onClick={(e) => {

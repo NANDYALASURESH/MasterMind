@@ -197,7 +197,6 @@ const LoginSignup = () => {
         otpKey: otpData.otpKey,
         otp: otpString
       });
-      console.log(res.data.token)
       if (res.data.success) {
         onSubmitSuccess(res.data.token);
       } else {
