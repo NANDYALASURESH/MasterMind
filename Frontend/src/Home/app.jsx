@@ -25,6 +25,7 @@ const LearningPlatform = () => {
   const userMenuRef = useRef(null);
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   const [filters, setFilters] = useState({
     platform: '',
@@ -36,27 +37,27 @@ const LearningPlatform = () => {
   const [savedCourses, setSavedCourses] = useState([]);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      const token = Cookies.get('jwt_token');
-      console.log(token)
-      if (!token) return;
+                    const fetchProfile = async () => {
+                const token = Cookies.get('jwt_token');
+                console.log(token)
+                if (!token) return;
 
-      try {
-        const res = await fetch('https://mastermind-2.onrender.com/profile', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.user);
-        } else {
-          setUser(null);
-        }
-      } catch (err) {
-        setUser(null);
-      }
-    };
+                try {
+                  const res = await fetch('https://mastermind-2.onrender.com/profile', {
+                    headers: {
+                      Authorization: `Bearer ${token}`,
+                    },
+                  });
+                  if (res.ok) {
+                    const data = await res.json();
+                    setUser(data.user);
+                  } else {
+                    setUser(null);
+                  }
+                } catch (err) {
+                  setUser(null);
+                }
+              };
 
     fetchProfile();
   }, []);
@@ -64,8 +65,8 @@ const LearningPlatform = () => {
   // Track screen size for mobile responsiveness
   useEffect(() => {
     const checkScreenSize = () => {
-      const mobile = window.innerWidth <= 768;
-      setIsMobile(mobile);
+          const mobile = window.innerWidth <= 768;
+    setIsMobile(mobile);
     };
 
     // Set initial value
@@ -136,11 +137,7 @@ const LearningPlatform = () => {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('touchstart', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Close notifications popover when clicking outside
@@ -152,12 +149,8 @@ const LearningPlatform = () => {
     };
     if (showNotifications) {
       document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('touchstart', handleClickOutside);
     }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
-    };
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showNotifications]);
 
   useEffect(() => {
@@ -249,8 +242,8 @@ const LearningPlatform = () => {
   };
 
   const handleLogout = () => {
-    Cookies.remove('jwt_token');
-    navigate('/login');
+      Cookies.remove('jwt_token');
+      navigate('/login');
   };
 
   // Toggle save/unsave course
@@ -325,18 +318,11 @@ const LearningPlatform = () => {
     setVisibleCount(10);
   }, [searchQuery, filters, filteredCourses.length]);
 
-  // Handle user menu toggle
-  const handleUserMenuToggle = (e) => {
+  // Handle profile menu toggle
+  const handleProfileToggle = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setShowUserMenu(prev => !prev);
-  };
-
-  // Handle notification toggle
-  const handleNotificationToggle = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setShowNotifications(prev => !prev);
+    setShowUserMenu(!showUserMenu);
   };
 
   // Loading state
@@ -344,7 +330,7 @@ const LearningPlatform = () => {
     return (
       <div style={{
         minHeight: '100vh',
-        width: "100vw",
+        width:"100vw",
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         display: 'flex',
         alignItems: 'center',
@@ -399,7 +385,8 @@ const LearningPlatform = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      width: "100vw",
+        width:"100vw",
+
       backgroundColor: '#f8fafc',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
     }}>
@@ -421,25 +408,25 @@ const LearningPlatform = () => {
           {/* Mobile Layout */}
           {isMobile ? (
             <div>
-              {/* Top row - Logo and Right controls */}
+              {/* Top Row - Logo and Actions */}
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                marginBottom: '16px'
+                marginBottom: showMobileSearch ? '16px' : '0'
               }}>
                 {/* Logo */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
                   <div style={{
-                    width: '40px',
-                    height: '40px',
+                    width: '36px',
+                    height: '36px',
                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                     borderRadius: '12px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}>
-                    <BookOpen size={20} color="white" />
+                    <BookOpen size={18} color="white" />
                   </div>
                   <h1 style={{
                     fontSize: '20px',
@@ -454,37 +441,52 @@ const LearningPlatform = () => {
                   </h1>
                 </div>
 
-                {/* Right controls */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                {/* Mobile Actions */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {/* Search Toggle */}
+                  <button
+                    onClick={() => setShowMobileSearch(!showMobileSearch)}
+                    style={{
+                      padding: '10px',
+                      borderRadius: '10px',
+                      border: 'none',
+                      backgroundColor: showMobileSearch ? '#667eea' : '#f1f5f9',
+                      color: showMobileSearch ? 'white' : '#64748b',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      WebkitTapHighlightColor: 'transparent'
+                    }}
+                  >
+                    <Search size={18} />
+                  </button>
+
                   {/* Notifications */}
                   <div style={{ position: 'relative' }} ref={notificationRef}>
                     <button 
+                      onClick={() => setShowNotifications(!showNotifications)}
                       style={{
                         position: 'relative',
-                        padding: '12px',
-                        borderRadius: '12px',
+                        padding: '10px',
+                        borderRadius: '10px',
                         border: 'none',
                         backgroundColor: '#f1f5f9',
                         cursor: 'pointer',
                         transition: 'all 0.2s ease',
                         WebkitTapHighlightColor: 'transparent'
                       }}
-                      onClick={handleNotificationToggle}
-                      onTouchStart={(e) => e.currentTarget.style.backgroundColor = '#e2e8f0'}
-                      onTouchEnd={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
                     >
-                      <Bell size={20} color="#64748b" />
+                      <Bell size={18} color="#64748b" />
                       {notifications > 0 && (
                         <span style={{
                           position: 'absolute',
-                          top: '6px',
-                          right: '6px',
-                          width: '18px',
-                          height: '18px',
+                          top: '4px',
+                          right: '4px',
+                          width: '16px',
+                          height: '16px',
                           backgroundColor: '#ef4444',
                           color: 'white',
                           borderRadius: '50%',
-                          fontSize: '12px',
+                          fontSize: '10px',
                           fontWeight: '600',
                           display: 'flex',
                           alignItems: 'center',
@@ -494,17 +496,19 @@ const LearningPlatform = () => {
                         </span>
                       )}
                     </button>
+                    
                     {showNotifications && (
                       <div style={{
                         position: 'absolute',
                         top: '110%',
                         right: 0,
                         minWidth: '280px',
+                        maxWidth: '320px',
                         background: 'rgba(255,255,255,0.98)',
                         borderRadius: '16px',
                         boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
                         border: '1px solid #e2e8f0',
-                        zIndex: 100,
+                        zIndex: 1000,
                         padding: '0',
                         overflow: 'hidden'
                       }}>
@@ -518,14 +522,22 @@ const LearningPlatform = () => {
                               <div key={n.id} style={{
                                 padding: '16px 20px',
                                 borderBottom: '1px solid #f1f5f9',
-                                fontSize: '15px',
+                                fontSize: '14px',
                                 color: '#374151',
                                 display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between'
+                                alignItems: 'flex-start',
+                                justifyContent: 'space-between',
+                                gap: '12px'
                               }}>
-                                <span>{n.text}</span>
-                                <span style={{ fontSize: '12px', color: '#64748b', marginLeft: '12px', whiteSpace: 'nowrap' }}>{n.time}</span>
+                                <span style={{ flex: 1, lineHeight: '1.4' }}>{n.text}</span>
+                                <span style={{ 
+                                  fontSize: '12px', 
+                                  color: '#64748b', 
+                                  whiteSpace: 'nowrap',
+                                  marginTop: '2px'
+                                }}>
+                                  {n.time}
+                                </span>
                               </div>
                             ))
                           )}
@@ -534,42 +546,41 @@ const LearningPlatform = () => {
                     )}
                   </div>
 
-                  {/* Filters Button */}
+                  {/* Filters */}
                   <button
                     onClick={() => setShowFilters(!showFilters)}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: '6px',
-                      padding: '10px 14px',
-                      borderRadius: '12px',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
                       border: 'none',
                       backgroundColor: showFilters ? '#667eea' : '#f1f5f9',
                       color: showFilters ? 'white' : '#64748b',
                       cursor: 'pointer',
-                      fontSize: '14px',
+                      fontSize: '13px',
                       fontWeight: '600',
                       transition: 'all 0.2s ease',
                       position: 'relative',
                       WebkitTapHighlightColor: 'transparent'
                     }}
-                    onTouchStart={(e) => {
-                      if (!showFilters) e.currentTarget.style.backgroundColor = '#e2e8f0';
-                    }}
-                    onTouchEnd={(e) => {
-                      if (!showFilters) e.currentTarget.style.backgroundColor = '#f1f5f9';
-                    }}
                   >
-                    <Filter size={14} />
+                    <Filter size={16} />
                     <span>Filters</span>
                     {getActiveFiltersCount() > 0 && (
                       <span style={{
                         backgroundColor: showFilters ? 'rgba(255,255,255,0.2)' : '#ef4444',
                         color: 'white',
-                        padding: '2px 6px',
-                        borderRadius: '10px',
-                        fontSize: '12px',
-                        fontWeight: '700'
+                        padding: '2px 5px',
+                        borderRadius: '8px',
+                        fontSize: '10px',
+                        fontWeight: '700',
+                        minWidth: '16px',
+                        height: '16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
                       }}>
                         {getActiveFiltersCount()}
                       </span>
@@ -580,24 +591,19 @@ const LearningPlatform = () => {
                   <div style={{ position: 'relative' }} ref={userMenuRef}>
                     {user ? (
                       <button
+                        onClick={handleProfileToggle}
+                        onTouchStart={handleProfileToggle}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
                           gap: '6px',
                           padding: '6px',
-                          borderRadius: '12px',
+                          borderRadius: '10px',
                           border: 'none',
                           backgroundColor: showUserMenu ? '#f1f5f9' : 'transparent',
                           cursor: 'pointer',
                           transition: 'all 0.2s ease',
                           WebkitTapHighlightColor: 'transparent'
-                        }}
-                        onClick={handleUserMenuToggle}
-                        onTouchStart={(e) => {
-                          if (!showUserMenu) e.currentTarget.style.backgroundColor = '#f1f5f9';
-                        }}
-                        onTouchEnd={(e) => {
-                          if (!showUserMenu) e.currentTarget.style.backgroundColor = 'transparent';
                         }}
                       >
                         <img
@@ -634,10 +640,10 @@ const LearningPlatform = () => {
                       </div>
                     )}
 
-                    {/* User Dropdown Menu */}
+                    {/* Mobile User Dropdown Menu */}
                     {showUserMenu && user && (
                       <>
-                        {/* Mobile Backdrop Overlay */}
+                        {/* Mobile Backdrop */}
                         <div 
                           style={{
                             position: 'fixed',
@@ -646,14 +652,12 @@ const LearningPlatform = () => {
                             right: 0,
                             bottom: 0,
                             backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                            zIndex: 9999
+                            zIndex: 9998
                           }} 
                           onClick={() => setShowUserMenu(false)}
-                          onTouchEnd={(e) => {
-                            e.preventDefault();
-                            setShowUserMenu(false);
-                          }}
                         />
+                        
+                        {/* Mobile Menu */}
                         <div style={{
                           position: 'fixed',
                           bottom: '20px',
@@ -661,36 +665,39 @@ const LearningPlatform = () => {
                           right: '20px',
                           backgroundColor: 'rgba(255, 255, 255, 0.98)',
                           backdropFilter: 'blur(20px)',
-                          borderRadius: '16px',
+                          borderRadius: '20px',
                           boxShadow: '0 25px 50px rgba(0, 0, 0, 0.25)',
                           border: '1px solid rgba(255, 255, 255, 0.2)',
-                          zIndex: 10000,
+                          zIndex: 9999,
                           overflow: 'hidden',
-                          transform: 'translateZ(0)'
+                          transform: 'translateZ(0)',
+                          maxHeight: '70vh',
+                          overflowY: 'auto'
                         }}>
                           {/* User Info Header */}
                           <div style={{
-                            padding: '20px',
+                            padding: '24px 20px',
                             borderBottom: '1px solid #e2e8f0',
                             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                             color: 'white'
                           }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                               <img
                                 src={user.avatar || "https://ui-avatars.com/api/?name=" + (user.username || "U")}
                                 alt={user.name || user.username || "User"}
                                 style={{
-                                  width: '36px',
-                                  height: '36px',
+                                  width: '48px',
+                                  height: '48px',
                                   borderRadius: '50%',
                                   objectFit: 'cover',
-                                  border: '2px solid #e2e8f0'
+                                  border: '3px solid rgba(255,255,255,0.3)'
                                 }}
                               />
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ 
                                   fontWeight: 700, 
-                                  fontSize: '14px',
+                                  fontSize: '16px',
+                                  marginBottom: '4px',
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis',
                                   whiteSpace: 'nowrap'
@@ -698,7 +705,7 @@ const LearningPlatform = () => {
                                   {user.name || user.username || "User"}
                                 </div>
                                 <div style={{ 
-                                  fontSize: '12px', 
+                                  fontSize: '14px', 
                                   color: '#e0e7ef',
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis',
@@ -712,39 +719,39 @@ const LearningPlatform = () => {
 
                           {/* Stats */}
                           <div style={{
-                            padding: '16px 20px',
+                            padding: '20px',
                             borderBottom: '1px solid #e2e8f0',
                             backgroundColor: '#f8fafc'
                           }}>
                             <div style={{ 
                               display: 'grid', 
                               gridTemplateColumns: '1fr 1fr', 
-                              gap: '12px', 
+                              gap: '16px', 
                               textAlign: 'center'
                             }}>
                               <div>
-                                <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
+                                <div style={{ fontSize: '20px', fontWeight: 700, color: '#1e293b' }}>
                                   {user.completedCourses || 0}
                                 </div>
-                                <div style={{ fontSize: '12px', color: '#64748b' }}>Completed</div>
+                                <div style={{ fontSize: '13px', color: '#64748b' }}>Completed</div>
                               </div>
                               <div>
-                                <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
+                                <div style={{ fontSize: '20px', fontWeight: 700, color: '#1e293b' }}>
                                   {user.savedCourses || 0}
                                 </div>
-                                <div style={{ fontSize: '12px', color: '#64748b' }}>Saved</div>
+                                <div style={{ fontSize: '13px', color: '#64748b' }}>Saved</div>
                               </div>
                               <div style={{ gridColumn: '1 / -1' }}>
-                                <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
+                                <div style={{ fontSize: '20px', fontWeight: 700, color: '#1e293b' }}>
                                   {user.totalHours || 0}h
                                 </div>
-                                <div style={{ fontSize: '12px', color: '#64748b' }}>Learning</div>
+                                <div style={{ fontSize: '13px', color: '#64748b' }}>Learning Hours</div>
                               </div>
                             </div>
                           </div>
 
                           {/* Menu Items */}
-                          <div style={{ padding: '8px 0' }}>
+                          <div style={{ padding: '12px 0' }}>
                             {[
                               { icon: User, label: 'Profile', color: '#64748b' },
                               {
@@ -762,12 +769,12 @@ const LearningPlatform = () => {
                                   width: '100%',
                                   display: 'flex',
                                   alignItems: 'center',
-                                  gap: '12px',
-                                  padding: '12px 20px',
+                                  gap: '16px',
+                                  padding: '16px 24px',
                                   border: 'none',
                                   backgroundColor: 'transparent',
                                   color: '#374151',
-                                  fontSize: '14px',
+                                  fontSize: '16px',
                                   fontWeight: '500',
                                   cursor: 'pointer',
                                   transition: 'all 0.2s ease',
@@ -780,47 +787,60 @@ const LearningPlatform = () => {
                                   }
                                   setShowUserMenu(false);
                                 }}
-                                onTouchStart={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
-                                onTouchEnd={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                onTouchStart={(e) => {
+                                  e.currentTarget.style.backgroundColor = '#f1f5f9';
+                                }}
+                                onTouchEnd={(e) => {
+                                  e.currentTarget.style.backgroundColor = 'transparent';
+                                  if (item.label === 'Saved Courses') {
+                                    navigate('/saved-courses');
+                                  }
+                                  setShowUserMenu(false);
+                                }}
                               >
                                 {item.label === 'Saved Courses' ? (
                                   <Heart
-                                    size={16}
+                                    size={20}
                                     color="#ef4444"
                                     fill={savedCourses.length > 0 ? "#ef4444" : "none"}
                                     style={{ transition: 'all 0.2s' }}
                                   />
                                 ) : (
-                                  <item.icon size={16} color={item.color} />
+                                  <item.icon size={20} color={item.color} />
                                 )}
                                 {item.label}
                               </button>
                             ))}
 
-                            <div style={{ height: '1px', backgroundColor: '#e2e8f0', margin: '8px 0' }} />
+                            <div style={{ height: '1px', backgroundColor: '#e2e8f0', margin: '12px 0' }} />
 
                             <button
                               onClick={handleLogout}
+                              onTouchStart={(e) => {
+                                e.currentTarget.style.backgroundColor = '#fef2f2';
+                              }}
+                              onTouchEnd={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                                handleLogout();
+                              }}
                               style={{
                                 width: '100%',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '12px',
-                                padding: '12px 20px',
+                                gap: '16px',
+                                padding: '16px 24px',
                                 border: 'none',
                                 backgroundColor: 'transparent',
                                 color: '#ef4444',
-                                fontSize: '14px',
+                                fontSize: '16px',
                                 fontWeight: '500',
                                 cursor: 'pointer',
                                 transition: 'all 0.2s ease',
                                 textAlign: 'left',
                                 WebkitTapHighlightColor: 'transparent'
                               }}
-                              onTouchStart={(e) => e.currentTarget.style.backgroundColor = '#fef2f2'}
-                              onTouchEnd={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                             >
-                              <LogOut size={16} />
+                              <LogOut size={20} />
                               Logout
                             </button>
                           </div>
@@ -831,43 +851,50 @@ const LearningPlatform = () => {
                 </div>
               </div>
 
-              {/* Search Bar - Full width on mobile */}
-              <div style={{ position: 'relative' }}>
+              {/* Mobile Search Bar */}
+              {showMobileSearch && (
                 <div style={{
                   position: 'relative',
                   display: 'flex',
                   alignItems: 'center'
                 }}>
-                  <Search
-                    size={20}
-                    style={{
-                      position: 'absolute',
-                      left: '16px',
-                      color: '#9ca3af',
-                      zIndex: 10
-                    }}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Search courses, topics, or instructors..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px 12px 44px',
-                      fontSize: '14px',
-                      border: '2px solid #e2e8f0',
-                      borderRadius: '12px',
-                      backgroundColor: '#ffffff',
-                      color: '#1e293b',
-                      outline: 'none',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                    onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
-                  />
+                  <div style={{
+                    position: 'relative',
+                    flex: 1,
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}>
+                    <Search
+                      size={18}
+                      style={{
+                        position: 'absolute',
+                        left: '14px',
+                        color: '#9ca3af',
+                        zIndex: 10
+                      }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Search courses..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '12px 14px 12px 42px',
+                        fontSize: '15px',
+                        border: '2px solid #e2e8f0',
+                        borderRadius: '12px',
+                        backgroundColor: '#ffffff',
+                        color: '#1e293b',
+                        outline: 'none',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                      onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           ) : (
             /* Desktop Layout */
@@ -965,7 +992,7 @@ const LearningPlatform = () => {
                     cursor: 'pointer',
                     transition: 'all 0.2s ease'
                   }}
-                  onClick={handleNotificationToggle}
+                  onClick={() => setShowNotifications((v) => !v)}
                   onMouseOver={(e) => e.target.style.backgroundColor = '#e2e8f0'}
                   onMouseOut={(e) => e.target.style.backgroundColor = '#f1f5f9'}
                   >
@@ -1004,6 +1031,7 @@ const LearningPlatform = () => {
                       padding: '0',
                       overflow: 'hidden'
                     }}>
+
                       <div style={{ maxHeight: '260px', overflowY: 'auto', background: 'white' }}>
                         {notificationList.length === 0 ? (
                           <div style={{ padding: '24px', color: '#64748b', textAlign: 'center' }}>
@@ -1069,7 +1097,7 @@ const LearningPlatform = () => {
                 <div style={{ position: 'relative' }} ref={userMenuRef}>
                   {user ? (
                     <button
-                      onClick={handleUserMenuToggle}
+                      onClick={() => setShowUserMenu(!showUserMenu)}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
@@ -1079,7 +1107,8 @@ const LearningPlatform = () => {
                         border: 'none',
                         backgroundColor: showUserMenu ? '#f1f5f9' : 'transparent',
                         cursor: 'pointer',
-                        transition: 'all 0.2s ease'
+                        transition: 'all 0.2s ease',
+                        WebkitTapHighlightColor: 'transparent'
                       }}
                     >
                       <img
@@ -1134,138 +1163,96 @@ const LearningPlatform = () => {
                       overflow: 'hidden',
                       transform: 'translateZ(0)'
                     }}>
-                      {/* User Info Header */}
-                      <div style={{
-                        padding: '20px',
-                        borderBottom: '1px solid #e2e8f0',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        color: 'white'
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <img
-                            src={user.avatar || "https://ui-avatars.com/api/?name=" + (user.username || "U")}
-                            alt={user.name || user.username || "User"}
-                            style={{
-                              width: '36px',
-                              height: '36px',
-                              borderRadius: '50%',
-                              objectFit: 'cover',
-                              border: '2px solid #e2e8f0'
-                            }}
-                          />
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ 
-                              fontWeight: 700, 
-                              fontSize: '14px',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap'
-                            }}>
-                              {user.name || user.username || "User"}
-                            </div>
-                            <div style={{ 
-                              fontSize: '12px', 
-                              color: '#e0e7ef',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              whiteSpace: 'nowrap'
-                            }}>
-                              {user.email || ""}
-                            </div>
+                    {/* User Info Header */}
+                    <div style={{
+                      padding: '20px',
+                      borderBottom: '1px solid #e2e8f0',
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      color: 'white'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <img
+                          src={user.avatar || "https://ui-avatars.com/api/?name=" + (user.username || "U")}
+                          alt={user.name || user.username || "User"}
+                          style={{
+                            width: '36px',
+                            height: '36px',
+                            borderRadius: '50%',
+                            objectFit: 'cover',
+                            border: '2px solid #e2e8f0'
+                          }}
+                        />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ 
+                            fontWeight: 700, 
+                            fontSize: '14px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}>
+                            {user.name || user.username || "User"}
+                          </div>
+                          <div style={{ 
+                            fontSize: '12px', 
+                            color: '#e0e7ef',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}>
+                            {user.email || ""}
                           </div>
                         </div>
                       </div>
+                    </div>
 
-                      {/* Stats */}
-                      <div style={{
-                        padding: '16px 20px',
-                        borderBottom: '1px solid #e2e8f0',
-                        backgroundColor: '#f8fafc'
+                    {/* Stats */}
+                    <div style={{
+                      padding: '16px 20px',
+                      borderBottom: '1px solid #e2e8f0',
+                      backgroundColor: '#f8fafc'
+                    }}>
+                      <div style={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: '1fr 1fr 1fr', 
+                        gap: '16px', 
+                        textAlign: 'center'
                       }}>
-                        <div style={{ 
-                          display: 'grid', 
-                          gridTemplateColumns: '1fr 1fr 1fr', 
-                          gap: '16px', 
-                          textAlign: 'center'
-                        }}>
-                          <div>
-                            <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
-                              {user.completedCourses || 0}
-                            </div>
-                            <div style={{ fontSize: '12px', color: '#64748b' }}>Completed</div>
+                        <div>
+                          <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
+                            {user.completedCourses || 0}
                           </div>
-                          <div>
-                            <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
-                              {user.savedCourses || 0}
-                            </div>
-                            <div style={{ fontSize: '12px', color: '#64748b' }}>Saved</div>
+                          <div style={{ fontSize: '12px', color: '#64748b' }}>Completed</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
+                            {user.savedCourses || 0}
                           </div>
-                          <div>
-                            <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
-                              {user.totalHours || 0}h
-                            </div>
-                            <div style={{ fontSize: '12px', color: '#64748b' }}>Learning</div>
+                          <div style={{ fontSize: '12px', color: '#64748b' }}>Saved</div>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
+                            {user.totalHours || 0}h
                           </div>
+                          <div style={{ fontSize: '12px', color: '#64748b' }}>Learning</div>
                         </div>
                       </div>
+                    </div>
 
-                      {/* Menu Items */}
-                      <div style={{ padding: '8px 0' }}>
-                        {[
-                          { icon: User, label: 'Profile', color: '#64748b' },
-                          {
-                            icon: Heart,
-                            label: 'Saved Courses',
-                            color: '#ef4444',
-                            isSaved: savedCourses.length > 0
-                          },
-                          { icon: Award, label: 'Certificates', color: '#f59e0b' },
-                          { icon: Settings, label: 'Settings', color: '#64748b' }
-                        ].map((item, index) => (
-                          <button
-                            key={index}
-                            style={{
-                              width: '100%',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '12px',
-                              padding: '12px 20px',
-                              border: 'none',
-                              backgroundColor: 'transparent',
-                              color: '#374151',
-                              fontSize: '14px',
-                              fontWeight: '500',
-                              cursor: 'pointer',
-                              transition: 'all 0.2s ease',
-                              textAlign: 'left'
-                            }}
-                            onClick={() => {
-                              if (item.label === 'Saved Courses') {
-                                navigate('/saved-courses');
-                              }
-                              setShowUserMenu(false);
-                            }}
-                            onMouseOver={(e) => e.target.style.backgroundColor = '#f1f5f9'}
-                            onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
-                          >
-                            {item.label === 'Saved Courses' ? (
-                              <Heart
-                                size={16}
-                                color="#ef4444"
-                                fill={savedCourses.length > 0 ? "#ef4444" : "none"}
-                                style={{ transition: 'all 0.2s' }}
-                              />
-                            ) : (
-                              <item.icon size={16} color={item.color} />
-                            )}
-                            {item.label}
-                          </button>
-                        ))}
-
-                        <div style={{ height: '1px', backgroundColor: '#e2e8f0', margin: '8px 0' }} />
-
+                    {/* Menu Items */}
+                    <div style={{ padding: '8px 0' }}>
+                      {[
+                        { icon: User, label: 'Profile', color: '#64748b' },
+                        {
+                          icon: Heart,
+                          label: 'Saved Courses',
+                          color: '#ef4444',
+                          isSaved: savedCourses.length > 0
+                        },
+                        { icon: Award, label: 'Certificates', color: '#f59e0b' },
+                        { icon: Settings, label: 'Settings', color: '#64748b' }
+                      ].map((item, index) => (
                         <button
-                          onClick={handleLogout}
+                          key={index}
                           style={{
                             width: '100%',
                             display: 'flex',
@@ -1274,21 +1261,63 @@ const LearningPlatform = () => {
                             padding: '12px 20px',
                             border: 'none',
                             backgroundColor: 'transparent',
-                            color: '#ef4444',
+                            color: '#374151',
                             fontSize: '14px',
                             fontWeight: '500',
                             cursor: 'pointer',
                             transition: 'all 0.2s ease',
                             textAlign: 'left'
                           }}
-                          onMouseOver={(e) => e.target.style.backgroundColor = '#fef2f2'}
+                          onClick={() => {
+                            if (item.label === 'Saved Courses') {
+                              navigate('/saved-courses');
+                            }
+                            setShowUserMenu(false);
+                          }}
+                          onMouseOver={(e) => e.target.style.backgroundColor = '#f1f5f9'}
                           onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
                         >
-                          <LogOut size={16} />
-                          Logout
+                          {item.label === 'Saved Courses' ? (
+                            <Heart
+                              size={16}
+                              color="#ef4444"
+                              fill={savedCourses.length > 0 ? "#ef4444" : "none"}
+                              style={{ transition: 'all 0.2s' }}
+                            />
+                          ) : (
+                            <item.icon size={16} color={item.color} />
+                          )}
+                          {item.label}
                         </button>
-                      </div>
+                      ))}
+
+                      <div style={{ height: '1px', backgroundColor: '#e2e8f0', margin: '8px 0' }} />
+
+                      <button
+                        onClick={handleLogout}
+                        style={{
+                          width: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          padding: '12px 20px',
+                          border: 'none',
+                          backgroundColor: 'transparent',
+                          color: '#ef4444',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          textAlign: 'left'
+                        }}
+                        onMouseOver={(e) => e.target.style.backgroundColor = '#fef2f2'}
+                        onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
+                      >
+                        <LogOut size={16} />
+                        Logout
+                      </button>
                     </div>
+                  </div>
                   )}
                 </div>
               </div>
