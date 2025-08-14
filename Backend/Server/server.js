@@ -221,72 +221,43 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// Step 2: Verify OTP and complete login
 app.post("/verify-otp", async (req, res) => {
   const { otpKey, otp } = req.body;
 
   try {
     if (!otpKey || !otp) {
-      return res.status(400).json({
-        success: false,
-        message: "OTP and key are required"
-      });
+      return res.status(400).json({ success: false, message: "OTP and key are required" });
     }
 
     const otpData = otpStore.get(otpKey);
+    if (!otpData) return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
 
-    if (!otpData) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid or expired OTP"
-      });
-    }
-
-    // Check if OTP is expired
     if (Date.now() > otpData.expires) {
       otpStore.delete(otpKey);
-      return res.status(400).json({
-        success: false,
-        message: "OTP has expired"
-      });
+      return res.status(400).json({ success: false, message: "OTP has expired" });
     }
 
-    // Verify OTP
     if (otpData.otp !== otp.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid OTP"
-      });
+      return res.status(400).json({ success: false, message: "Invalid OTP" });
     }
 
-    // OTP is valid, generate JWT token
     const jwtToken = jwt.sign(
       { username: otpData.username, email: otpData.email },
-      "MY_SECRET_TOKEN"
+      "MY_SECRET_TOKEN",
+      { expiresIn: "24h" }
     );
 
-    // Set JWT as an HttpOnly cookie
-    res.cookie('jwt_token', jwtToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Use secure in production (HTTPS)
-      sameSite: 'Lax', // Adjust based on your SameSite policy needs
-      maxAge: 3600000 // 1 hour expiration for the cookie (adjust as needed)
-    });
-
-    // Clean up OTP
     otpStore.delete(otpKey);
 
     return res.json({
       success: true,
       message: "Login successful",
+      token: jwtToken // send token to frontend
     });
 
   } catch (err) {
     console.error("OTP verification error:", err);
-    res.status(500).json({
-      success: false,
-      message: "Internal Server Error"
-    });
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 });
 
@@ -335,16 +306,10 @@ app.post("/resend-otp", async (req, res) => {
 
 // Middleware to authenticate and extract user from JWT
 function authenticateToken(req, res, next) {
-  // Check for token in Authorization header first, then cookies
-  let token = req.headers.authorization?.split(' ')[1]; // Bearer token
-  if (!token) {
-    token = req.cookies.jwt_token; // Get token from HttpOnly cookie
-  }
-  
-  if (!token) {
-    return res.status(401).json({ message: "Authentication token missing." });
-  }
-  
+  const authHeader = req.headers.authorization;
+  const token = authHeader && authHeader.split(' ')[1];
+  if (!token) return res.status(401).json({ message: "Authentication token missing." });
+
   try {
     const decoded = jwt.verify(token, "MY_SECRET_TOKEN");
     req.user = decoded;
@@ -430,7 +395,7 @@ app.get('/profile', (req, res) => {
 });
 
 // ...existing code...
-
+ 
 
 
 

@@ -13,7 +13,7 @@ const LoginSignup = () => {
     name: '',
   });
   const [otpData, setOtpData] = useState({
-    otpKey: '',
+    otpKey: '', 
     otp: ['', '', '', '', '', ''],
     timeLeft: 300, // 5 minutes in seconds
   });
@@ -153,7 +153,7 @@ const LoginSignup = () => {
           }));
           setShowOTPScreen(true);
         } else if (res.data.success) {
-          onSubmitSuccess(res.data.jwtToken);
+          onSubmitSuccess(res.data.token);
         } else {
           setError(res.data.message || 'Login failed');
         }
