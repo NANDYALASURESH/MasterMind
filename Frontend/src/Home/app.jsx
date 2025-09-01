@@ -42,7 +42,7 @@ const LearningPlatform = () => {
                 if (!token) return;
 
                 try {
-                  const res = await fetch('https://mastermind-2.onrender.com/profile', {
+                  const res = await fetch('https://mastermind-wfnw.onrender.com/profile', {
                     headers: {
                       Authorization: `Bearer ${token}`,
                     },
@@ -83,7 +83,7 @@ const LearningPlatform = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch('https://mastermind-2.onrender.com/courses');
+        const res = await fetch('https://mastermind-wfnw.onrender.com/courses');
         if (!res.ok) throw new Error('Failed to fetch');
         const data = await res.json();
         // Backend returns an array directly
@@ -111,7 +111,7 @@ const LearningPlatform = () => {
       const token = Cookies.get('jwt_token');
       if (!token) return;
       try {
-        const res = await fetch('https://mastermind-2.onrender.com/saved-courses', {
+        const res = await fetch('https://mastermind-wfnw.onrender.com/saved-courses', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -256,7 +256,7 @@ const LearningPlatform = () => {
     if (savedCourses.includes(courseId)) {
       // Unsave (DELETE)
       try {
-        const res = await fetch('https://mastermind-2.onrender.com/saved-courses', {
+        const res = await fetch('https://mastermind-wfnw.onrender.com/saved-courses', {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -277,7 +277,7 @@ const LearningPlatform = () => {
     } else {
       // Save (POST)
       try {
-        const res = await fetch('https://mastermind-2.onrender.com/saved-courses', {
+        const res = await fetch('https://mastermind-wfnw.onrender.com/saved-courses', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
