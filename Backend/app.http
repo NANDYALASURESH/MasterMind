@@ -1,5 +1,5 @@
 ### 📝 Register a New User
-POST https://mastermind-0ex7.onrender.com/users
+POST https://mastermind-wfnw.onrender.com/users
 Content-Type: application/json
 
 {
@@ -18,7 +18,7 @@ Content-Type: application/json
   "password": "Secret123!"
 }
 ######
-POST https://mastermind-0ex7.onrender.com/saved-courses
+POST https://mastermind-wfnw.onrender.com/saved-courses
 Content-Type: application/json
 Authorization: Bearer 
 
