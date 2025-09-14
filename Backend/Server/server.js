@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({
-  origin: 'https://master-mind-lovat.vercel.app',
+  origin: 'https://master-mind-hwe81mn9b-sureshs-projects-460bee00.vercel.app',
   credentials: true
 }));
 
