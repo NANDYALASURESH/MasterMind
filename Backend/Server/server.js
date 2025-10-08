@@ -15,13 +15,7 @@ const app = express();
 app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
-app.use(cors({
-  origin: [
-    'https://master-mind-hwe81mn9b-sureshs-projects-460bee00.vercel.app',
-    'https://master-mind-71wh4evyt-sureshs-projects-460bee00.vercel.app', // Add this if it's needed
-  ],
-  credentials: true
-}));
+app.use(cors());
 
 
 // MongoDB Connection
