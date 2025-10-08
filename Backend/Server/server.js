@@ -15,8 +15,12 @@ const app = express();
 app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
 
+app.use(cors({
+  origin: 'https://master-mind-lovat.vercel.app',  // your frontend domain
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true,  // allow cookies, auth headers, etc.
+}));
 
 // MongoDB Connection
 const mongoUri = process.env.MONGODB_URI;
