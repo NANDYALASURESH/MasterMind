@@ -163,15 +163,24 @@ const LoginSignup = () => {
           password: formData.password,
         });
 
-        alert(response.data.message || 'Signup successful! Please login.');
-
-        setFormData({
-          username: '',
-          email: '',
-          password: '',
-          name: '',
-        });
-        setIsLogin(true);
+        if (response.data.success && response.data.requiresOTP) {
+          setOtpData(prev => ({
+            ...prev,
+            otpKey: response.data.otpKey,
+            timeLeft: 300,
+            otp: ['', '', '', '', '', '']
+          }));
+          setShowOTPScreen(true);
+        } else {
+          alert(response.data.message || 'Signup successful! Please login.');
+          setFormData({
+            username: '',
+            email: '',
+            password: '',
+            name: '',
+          });
+          setIsLogin(true);
+        }
       }
     } catch (err) {
       setError(err.response?.data?.message ||

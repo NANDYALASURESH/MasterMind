@@ -75,7 +75,7 @@ app.get('/api/courses', (req, res) => {
 });
 
 
-// Signup endpoint
+// Signup endpoint (Step 1: Validate & Send OTP)
 app.post('/api/users', async (req, res) => {
   const { username, name, email, password } = req.body;
 
@@ -84,21 +84,38 @@ app.post('/api/users', async (req, res) => {
   }
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = new User({
-      username,
-      name,
-      email,
-      password: hashedPassword
-    });
-
-    await user.save();
-    res.json({ message: 'User registered successfully!' });
-  } catch (err) {
-    if (err.code === 11000) { // Mongoose duplicate key error
+    // Check if user already exists
+    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    if (existingUser) {
       return res.status(400).json({ message: 'Username or email already exists' });
     }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Generate OTP
+    const otp = generateOTP();
+    const otpKey = `${username}_${Date.now()}`;
+
+    // Store temporary user data & OTP
+    otpStore.set(otpKey, {
+      otp,
+      tempUser: { username, name, email, password: hashedPassword },
+      timestamp: Date.now(),
+      expires: Date.now() + 5 * 60 * 1000 // 5 minutes
+    });
+
+    // Send OTP via email
+    await sendOTPEmail(email, otp, username);
+
+    res.json({
+      success: true,
+      message: 'OTP sent to your email',
+      otpKey,
+      requiresOTP: true
+    });
+
+  } catch (err) {
+    console.error("Signup error:", err);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -240,8 +257,18 @@ app.post("/api/verify-otp", async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid OTP" });
     }
 
+    // Check if this is a signup verification (has tempUser)
+    if (otpData.tempUser) {
+      const newUser = new User(otpData.tempUser);
+      await newUser.save();
+      // Update otpData to have queryable fields for JWT generation if needed, 
+      // primarily we need username and email which are in tempUser
+      otpData.username = newUser.username;
+      otpData.email = newUser.email;
+    }
+
     const jwtToken = jwt.sign(
-      { username: otpData.username, email: otpData.email },
+      { username: otpData.username || otpData.tempUser.username, email: otpData.email || otpData.tempUser.email },
       "MY_SECRET_TOKEN",
       { expiresIn: "24h" }
     );
@@ -250,12 +277,15 @@ app.post("/api/verify-otp", async (req, res) => {
 
     return res.json({
       success: true,
-      message: "Login successful",
+      message: "Verification successful",
       token: jwtToken // send token to frontend
     });
 
   } catch (err) {
     console.error("OTP verification error:", err);
+    if (err.code === 11000) {
+      return res.status(400).json({ success: false, message: "User already exists" });
+    }
     res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 });
