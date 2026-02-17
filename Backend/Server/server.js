@@ -125,7 +125,7 @@ const transporter = nodemailer.createTransport({
 // Store OTPs temporarily (in production, use Redis or database)
 const otpStore = new Map();
 
-console.log(otpStore,"otpStore")
+console.log(otpStore, "otpStore")
 
 // Generate 6-digit OTP
 function generateOTP() {
@@ -394,11 +394,15 @@ app.get('/profile', (req, res) => {
 });
 
 // ...existing code...
- 
+
 
 
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;

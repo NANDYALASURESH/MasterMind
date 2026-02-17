@@ -36,27 +36,27 @@ const LearningPlatform = () => {
   const [savedCourses, setSavedCourses] = useState([]);
 
   useEffect(() => {
-                    const fetchProfile = async () => {
-                const token = Cookies.get('jwt_token');
-                console.log(token)
-                if (!token) return;
+    const fetchProfile = async () => {
+      const token = Cookies.get('jwt_token');
+      console.log(token)
+      if (!token) return;
 
-                try {
-                  const res = await fetch('https://mastermind-wfnw.onrender.com/profile', {
-                    headers: {
-                      Authorization: `Bearer ${token}`,
-                    },
-                  });
-                  if (res.ok) {
-                    const data = await res.json();
-                    setUser(data.user);
-                  } else {
-                    setUser(null);
-                  }
-                } catch (err) {
-                  setUser(null);
-                }
-              };
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/profile`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data.user);
+        } else {
+          setUser(null);
+        }
+      } catch (err) {
+        setUser(null);
+      }
+    };
 
     fetchProfile();
   }, []);
@@ -64,8 +64,8 @@ const LearningPlatform = () => {
   // Track screen size for mobile responsiveness
   useEffect(() => {
     const checkScreenSize = () => {
-          const mobile = window.innerWidth <= 768;
-    setIsMobile(mobile);
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
     };
 
     // Set initial value
@@ -83,7 +83,7 @@ const LearningPlatform = () => {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch('https://mastermind-wfnw.onrender.com/courses');
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/courses`);
         if (!res.ok) throw new Error('Failed to fetch');
         const data = await res.json();
         // Backend returns an array directly
@@ -111,7 +111,7 @@ const LearningPlatform = () => {
       const token = Cookies.get('jwt_token');
       if (!token) return;
       try {
-        const res = await fetch('https://mastermind-wfnw.onrender.com/saved-courses', {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/saved-courses`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -241,8 +241,8 @@ const LearningPlatform = () => {
   };
 
   const handleLogout = () => {
-      Cookies.remove('jwt_token');
-      navigate('/login');
+    Cookies.remove('jwt_token');
+    navigate('/login');
   };
 
   // Toggle save/unsave course
@@ -256,7 +256,7 @@ const LearningPlatform = () => {
     if (savedCourses.includes(courseId)) {
       // Unsave (DELETE)
       try {
-        const res = await fetch('https://mastermind-wfnw.onrender.com/saved-courses', {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/saved-courses`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -277,7 +277,7 @@ const LearningPlatform = () => {
     } else {
       // Save (POST)
       try {
-        const res = await fetch('https://mastermind-wfnw.onrender.com/saved-courses', {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/saved-courses`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -322,7 +322,7 @@ const LearningPlatform = () => {
     return (
       <div style={{
         minHeight: '100vh',
-        width:"100vw",
+        width: "100vw",
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         display: 'flex',
         alignItems: 'center',
@@ -377,7 +377,7 @@ const LearningPlatform = () => {
   return (
     <div style={{
       minHeight: '100vh',
-        width:"100vw",
+      width: "100vw",
 
       backgroundColor: '#f8fafc',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif'
@@ -488,14 +488,14 @@ const LearningPlatform = () => {
             </div>
 
             {/* Right Section */}
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
               gap: '16px',
-                              flexShrink: 0,
-                '@media (max-width: 768px)': {
-                  gap: '12px'
-                }
+              flexShrink: 0,
+              '@media (max-width: 768px)': {
+                gap: '12px'
+              }
             }} className="right-section">
               {/* Notifications */}
               <div style={{ position: 'relative' }} ref={notificationRef}>
@@ -508,9 +508,9 @@ const LearningPlatform = () => {
                   cursor: 'pointer',
                   transition: 'all 0.2s ease'
                 }}
-                onClick={() => setShowNotifications((v) => !v)}
-                onMouseOver={(e) => e.target.style.backgroundColor = '#e2e8f0'}
-                onMouseOut={(e) => e.target.style.backgroundColor = '#f1f5f9'}
+                  onClick={() => setShowNotifications((v) => !v)}
+                  onMouseOver={(e) => e.target.style.backgroundColor = '#e2e8f0'}
+                  onMouseOut={(e) => e.target.style.backgroundColor = '#f1f5f9'}
                 >
                   <Bell size={20} color="#64748b" />
                   {notifications > 0 && (
@@ -672,7 +672,7 @@ const LearningPlatform = () => {
                   <>
                     {/* Mobile Backdrop Overlay */}
                     {isMobile && (
-                      <div 
+                      <div
                         style={{
                           position: 'fixed',
                           top: 0,
@@ -681,7 +681,7 @@ const LearningPlatform = () => {
                           bottom: 0,
                           backgroundColor: 'rgba(0, 0, 0, 0.5)',
                           zIndex: 9999
-                        }} 
+                        }}
                         onClick={() => setShowUserMenu(false)}
                         onTouchEnd={(e) => {
                           e.preventDefault();
@@ -708,104 +708,172 @@ const LearningPlatform = () => {
                       overflow: 'hidden',
                       transform: 'translateZ(0)'
                     }} className="user-dropdown">
-                    {/* User Info Header */}
-                    <div style={{
-                      padding: '20px',
-                      borderBottom: '1px solid #e2e8f0',
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      color: 'white'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <img
-                          src={user.avatar || "https://ui-avatars.com/api/?name=" + (user.username || "U")}
-                          alt={user.name || user.username || "User"}
-                          style={{
-                            width: '36px',
-                            height: '36px',
-                            borderRadius: '50%',
-                            objectFit: 'cover',
-                            border: '2px solid #e2e8f0'
-                          }}
-                        />
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ 
-                            fontWeight: 700, 
-                            fontSize: '14px',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}>
-                            {user.name || user.username || "User"}
-                          </div>
-                          <div style={{ 
-                            fontSize: '12px', 
-                            color: '#e0e7ef',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}>
-                            {user.email || ""}
+                      {/* User Info Header */}
+                      <div style={{
+                        padding: '20px',
+                        borderBottom: '1px solid #e2e8f0',
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        color: 'white'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <img
+                            src={user.avatar || "https://ui-avatars.com/api/?name=" + (user.username || "U")}
+                            alt={user.name || user.username || "User"}
+                            style={{
+                              width: '36px',
+                              height: '36px',
+                              borderRadius: '50%',
+                              objectFit: 'cover',
+                              border: '2px solid #e2e8f0'
+                            }}
+                          />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{
+                              fontWeight: 700,
+                              fontSize: '14px',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}>
+                              {user.name || user.username || "User"}
+                            </div>
+                            <div style={{
+                              fontSize: '12px',
+                              color: '#e0e7ef',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}>
+                              {user.email || ""}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Stats */}
-                    <div style={{
-                      padding: '16px 20px',
-                      borderBottom: '1px solid #e2e8f0',
-                      backgroundColor: '#f8fafc'
-                    }}>
-                      <div style={{ 
-                        display: 'grid', 
-                        gridTemplateColumns: '1fr 1fr 1fr', 
-                        gap: '16px', 
-                        textAlign: 'center',
-                        '@media (max-width: 480px)': {
-                          gridTemplateColumns: '1fr 1fr',
-                          gap: '12px'
-                        }
-                      }} className="user-stats">
-                        <div>
-                          <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
-                            {user.completedCourses || 0}
-                          </div>
-                          <div style={{ fontSize: '12px', color: '#64748b' }}>Completed</div>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
-                            {user.savedCourses || 0}
-                          </div>
-                          <div style={{ fontSize: '12px', color: '#64748b' }}>Saved</div>
-                        </div>
+                      {/* Stats */}
+                      <div style={{
+                        padding: '16px 20px',
+                        borderBottom: '1px solid #e2e8f0',
+                        backgroundColor: '#f8fafc'
+                      }}>
                         <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: '1fr 1fr 1fr',
+                          gap: '16px',
+                          textAlign: 'center',
                           '@media (max-width: 480px)': {
-                            gridColumn: '1 / -1'
+                            gridTemplateColumns: '1fr 1fr',
+                            gap: '12px'
                           }
-                        }} className="learning-hours">
-                          <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
-                            {user.totalHours || 0}h
+                        }} className="user-stats">
+                          <div>
+                            <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
+                              {user.completedCourses || 0}
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>Completed</div>
                           </div>
-                          <div style={{ fontSize: '12px', color: '#64748b' }}>Learning</div>
+                          <div>
+                            <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
+                              {user.savedCourses || 0}
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>Saved</div>
+                          </div>
+                          <div style={{
+                            '@media (max-width: 480px)': {
+                              gridColumn: '1 / -1'
+                            }
+                          }} className="learning-hours">
+                            <div style={{ fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
+                              {user.totalHours || 0}h
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>Learning</div>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Menu Items */}
-                    <div style={{ padding: '8px 0' }}>
-                      {[
-                        { icon: User, label: 'Profile', color: '#64748b' },
-                        {
-                          icon: Heart,
-                          label: 'Saved Courses',
-                          color: '#ef4444',
-                          isSaved: savedCourses.length > 0
-                        },
-                        { icon: Award, label: 'Certificates', color: '#f59e0b' },
-                        { icon: Settings, label: 'Settings', color: '#64748b' }
-                      ].map((item, index) => (
+                      {/* Menu Items */}
+                      <div style={{ padding: '8px 0' }}>
+                        {[
+                          { icon: User, label: 'Profile', color: '#64748b' },
+                          {
+                            icon: Heart,
+                            label: 'Saved Courses',
+                            color: '#ef4444',
+                            isSaved: savedCourses.length > 0
+                          },
+                          { icon: Award, label: 'Certificates', color: '#f59e0b' },
+                          { icon: Settings, label: 'Settings', color: '#64748b' }
+                        ].map((item, index) => (
+                          <button
+                            key={index}
+                            style={{
+                              width: '100%',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '12px',
+                              padding: '12px 20px',
+                              border: 'none',
+                              backgroundColor: 'transparent',
+                              color: '#374151',
+                              fontSize: '14px',
+                              fontWeight: '500',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              textAlign: 'left'
+                            }}
+                            onClick={() => {
+                              if (item.label === 'Saved Courses') {
+                                navigate('/saved-courses');
+                              } else if (item.label === 'Profile') {
+                                // Navigate to profile page or show profile modal
+                                // You can add navigation to a profile page here
+                              } else if (item.label === 'Settings') {
+                                // Navigate to settings page or show settings modal
+                                // You can add navigation to a settings page here
+                              } else if (item.label === 'Certificates') {
+                                // Navigate to certificates page
+                                // You can add navigation to a certificates page here
+                              }
+                              setShowUserMenu(false); // Close menu after click
+                            }}
+                            onTouchEnd={(e) => {
+                              e.preventDefault();
+                              if (item.label === 'Saved Courses') {
+                                navigate('/saved-courses');
+                              } else if (item.label === 'Profile') {
+                                // Handle profile click
+                              } else if (item.label === 'Settings') {
+                                // Handle settings click
+                              } else if (item.label === 'Certificates') {
+                                // Handle certificates click
+                              }
+                              setShowUserMenu(false);
+                            }}
+                            onMouseOver={(e) => e.target.style.backgroundColor = '#f1f5f9'}
+                            onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
+                          >
+                            {item.label === 'Saved Courses' ? (
+                              <Heart
+                                size={16}
+                                color="#ef4444"
+                                fill={savedCourses.length > 0 ? "#ef4444" : "none"}
+                                style={{ transition: 'all 0.2s' }}
+                              />
+                            ) : (
+                              <item.icon size={16} color={item.color} />
+                            )}
+                            {item.label}
+                          </button>
+                        ))}
+
+                        <div style={{ height: '1px', backgroundColor: '#e2e8f0', margin: '8px 0' }} />
+
                         <button
-                          key={index}
+                          onClick={handleLogout}
+                          onTouchEnd={(e) => {
+                            e.preventDefault();
+                            handleLogout();
+                          }}
                           style={{
                             width: '100%',
                             display: 'flex',
@@ -814,91 +882,23 @@ const LearningPlatform = () => {
                             padding: '12px 20px',
                             border: 'none',
                             backgroundColor: 'transparent',
-                            color: '#374151',
+                            color: '#ef4444',
                             fontSize: '14px',
                             fontWeight: '500',
                             cursor: 'pointer',
                             transition: 'all 0.2s ease',
-                            textAlign: 'left'
+                            textAlign: 'left',
+                            WebkitTapHighlightColor: 'transparent'
                           }}
-                          onClick={() => {
-                            if (item.label === 'Saved Courses') {
-                              navigate('/saved-courses');
-                            } else if (item.label === 'Profile') {
-                              // Navigate to profile page or show profile modal
-                              // You can add navigation to a profile page here
-                            } else if (item.label === 'Settings') {
-                              // Navigate to settings page or show settings modal
-                              // You can add navigation to a settings page here
-                            } else if (item.label === 'Certificates') {
-                              // Navigate to certificates page
-                              // You can add navigation to a certificates page here
-                            }
-                            setShowUserMenu(false); // Close menu after click
-                          }}
-                          onTouchEnd={(e) => {
-                            e.preventDefault();
-                            if (item.label === 'Saved Courses') {
-                              navigate('/saved-courses');
-                            } else if (item.label === 'Profile') {
-                              // Handle profile click
-                            } else if (item.label === 'Settings') {
-                              // Handle settings click
-                            } else if (item.label === 'Certificates') {
-                              // Handle certificates click
-                            }
-                            setShowUserMenu(false);
-                          }}
-                          onMouseOver={(e) => e.target.style.backgroundColor = '#f1f5f9'}
+                          onMouseOver={(e) => e.target.style.backgroundColor = '#fef2f2'}
                           onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
                         >
-                          {item.label === 'Saved Courses' ? (
-                            <Heart
-                              size={16}
-                              color="#ef4444"
-                              fill={savedCourses.length > 0 ? "#ef4444" : "none"}
-                              style={{ transition: 'all 0.2s' }}
-                            />
-                          ) : (
-                            <item.icon size={16} color={item.color} />
-                          )}
-                          {item.label}
+                          <LogOut size={16} />
+                          Logout
                         </button>
-                      ))}
-
-                      <div style={{ height: '1px', backgroundColor: '#e2e8f0', margin: '8px 0' }} />
-
-                      <button
-                        onClick={handleLogout}
-                        onTouchEnd={(e) => {
-                          e.preventDefault();
-                          handleLogout();
-                        }}
-                        style={{
-                          width: '100%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '12px',
-                          padding: '12px 20px',
-                          border: 'none',
-                          backgroundColor: 'transparent',
-                          color: '#ef4444',
-                          fontSize: '14px',
-                          fontWeight: '500',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          textAlign: 'left',
-                          WebkitTapHighlightColor: 'transparent'
-                        }}
-                        onMouseOver={(e) => e.target.style.backgroundColor = '#fef2f2'}
-                        onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}
-                      >
-                        <LogOut size={16} />
-                        Logout
-                      </button>
+                      </div>
                     </div>
-                  </div>
-                </>
+                  </>
                 )}
               </div>
             </div>
@@ -1125,14 +1125,14 @@ const LearningPlatform = () => {
                   transition: 'all 0.3s ease',
                   cursor: 'pointer'
                 }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.15)';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0px)';
-                  e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.08)';
-                }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.15)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0px)';
+                    e.currentTarget.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.08)';
+                  }}
                 >
                   {/* Course Image */}
                   <div style={{ position: 'relative', height: '200px', overflow: 'hidden' }}>
@@ -1187,26 +1187,26 @@ const LearningPlatform = () => {
                     </div>
                     {/* Save Button */}
                     <button
-  onClick={(e) => {
-    e.stopPropagation();
-    handleSaveCourse(course._id);
-  }}
-  aria-label={savedCourses.includes(course._id) ? "Unsave course" : "Save course"}
-                      style={{outline:"none",color:"black", position: 'absolute', top: '44px', right: '12px', background: 'transparent', border: 'none', cursor: 'pointer'}}
->
-  <Heart
-    size={22}
-    color={savedCourses.includes(course._id) ? "#ef4444" : "#64748b"}
-    fill={savedCourses.includes(course._id) ? "#ef4444" : "none"}
-    style={{ transition: 'color 0.5s ease' }}
-  />
-</button>
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSaveCourse(course._id);
+                      }}
+                      aria-label={savedCourses.includes(course._id) ? "Unsave course" : "Save course"}
+                      style={{ outline: "none", color: "black", position: 'absolute', top: '44px', right: '12px', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                    >
+                      <Heart
+                        size={22}
+                        color={savedCourses.includes(course._id) ? "#ef4444" : "#64748b"}
+                        fill={savedCourses.includes(course._id) ? "#ef4444" : "none"}
+                        style={{ transition: 'color 0.5s ease' }}
+                      />
+                    </button>
 
 
                   </div>
 
                   {/* Course Content */}
-                  <div style={{ 
+                  <div style={{
                     padding: '24px',
                     '@media (max-width: 768px)': {
                       padding: '20px'
@@ -1248,7 +1248,7 @@ const LearningPlatform = () => {
                       }}>
                         by {course.instructor}
                       </p>
-                      
+
                     </div>
                     {/* Course Meta */}
                     <div style={{
@@ -1299,8 +1299,8 @@ const LearningPlatform = () => {
                         <DollarSign size={16} />
                         <span>{course.price === 'Free' ? 'Free' : 'Paid'}</span>
                       </div>
-                      
-                      <button 
+
+                      <button
                         style={{
                           padding: '10px 20px',
                           fontSize: '14px',

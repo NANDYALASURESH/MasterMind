@@ -24,7 +24,7 @@ const SavedCourses = () => {
     setError(null);
 
     try {
-      const res = await fetch('https://mastermind-wfnw.onrender.com/saved-courses', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/saved-courses`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -72,7 +72,7 @@ const SavedCourses = () => {
     setError(null);
 
     try {
-      const res = await fetch('https://mastermind-wfnw.onrender.com/saved-courses', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/saved-courses`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -171,7 +171,7 @@ const SavedCourses = () => {
         <div className="header-container">
           <div className="header-content">
             <div className="header-left">
-              <button 
+              <button
                 className="back-button"
                 onClick={() => navigate('/home')}
               >

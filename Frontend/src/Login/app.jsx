@@ -13,7 +13,7 @@ const LoginSignup = () => {
     name: '',
   });
   const [otpData, setOtpData] = useState({
-    otpKey: '', 
+    otpKey: '',
     otp: ['', '', '', '', '', ''],
     timeLeft: 300, // 5 minutes in seconds
   });
@@ -22,7 +22,7 @@ const LoginSignup = () => {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
-  
+
   const otpInputRefs = useRef([]);
   const navigate = useNavigate();
 
@@ -62,10 +62,10 @@ const LoginSignup = () => {
 
   const handleOTPChange = (index, value) => {
     if (value.length > 1) return; // Only allow single digit
-    
+
     const newOtp = [...otpData.otp];
     newOtp[index] = value;
-    
+
     setOtpData(prev => ({
       ...prev,
       otp: newOtp
@@ -89,11 +89,11 @@ const LoginSignup = () => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
     const newOtp = Array(6).fill('');
-    
+
     for (let i = 0; i < pastedData.length; i++) {
       newOtp[i] = pastedData[i];
     }
-    
+
     setOtpData(prev => ({
       ...prev,
       otp: newOtp
@@ -107,43 +107,43 @@ const LoginSignup = () => {
 
   const validateForm = () => {
     const { username, email, password, name } = formData;
-    
+
     if (!username.trim()) return "Username is required";
     if (!password.trim()) return "Password is required";
-    
+
     if (!isLogin) {
       if (!email.trim()) return "Email is required";
       if (!/\S+@\S+\.\S+/.test(email)) return "Please enter a valid email";
       if (!name.trim()) return "Full name is required";
       if (password.length < 6) return "Password must be at least 6 characters";
     }
-    
+
     return null;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     const validationError = validateForm();
     if (validationError) {
       setError(validationError);
       return;
     }
-    
+
     setIsLoading(true);
     setError('');
 
     try {
       if (isLogin) {
         const res = await axios.post(
-          'https://mastermind-wfnw.onrender.com/login',
-          { 
-            username: formData.username, 
-            password: formData.password 
+          `${import.meta.env.VITE_API_URL}/login`,
+          {
+            username: formData.username,
+            password: formData.password
           },
           { withCredentials: true }
         );
-        
+
         if (res.data.success && res.data.requiresOTP) {
           setOtpData(prev => ({
             ...prev,
@@ -152,19 +152,19 @@ const LoginSignup = () => {
             otp: ['', '', '', '', '', '']
           }));
           setShowOTPScreen(true);
-        }else {
+        } else {
           setError(res.data.message || 'Login failed');
         }
       } else {
-        const response = await axios.post('https://mastermind-wfnw.onrender.com/users', {
+        const response = await axios.post(`${import.meta.env.VITE_API_URL}/users`, {
           username: formData.username,
           name: formData.name,
           email: formData.email,
           password: formData.password,
         });
-        
+
         alert(response.data.message || 'Signup successful! Please login.');
-        
+
         setFormData({
           username: '',
           email: '',
@@ -174,7 +174,7 @@ const LoginSignup = () => {
         setIsLogin(true);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 
+      setError(err.response?.data?.message ||
         (isLogin ? 'Login failed. Please check your credentials.' : 'Signup failed. Please try again.'));
     } finally {
       setIsLoading(false);
@@ -183,7 +183,7 @@ const LoginSignup = () => {
 
   const handleOTPSubmit = async () => {
     const otpString = otpData.otp.join('');
-    
+
     if (otpString.length !== 6) {
       setError('Please enter complete OTP');
       return;
@@ -193,7 +193,7 @@ const LoginSignup = () => {
     setError('');
 
     try {
-      const res = await axios.post('https://mastermind-wfnw.onrender.com/verify-otp', {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/verify-otp`, {
         otpKey: otpData.otpKey,
         otp: otpString
       });
@@ -216,7 +216,7 @@ const LoginSignup = () => {
     setError('');
 
     try {
-      const res = await axios.post('https://mastermind-wfnw.onrender.com/resend-otp', {
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/resend-otp`, {
         otpKey: otpData.otpKey
       });
 
@@ -407,7 +407,7 @@ const LoginSignup = () => {
                 className={`submit-btn ${isLoading ? 'loading' : ''}`}
               >
                 {isLoading && <div className="spinner" />}
-                {isLoading 
+                {isLoading
                   ? `${isLogin ? 'Signing In...' : 'Signing Up...'}`
                   : `${isLogin ? 'Sign In' : 'Sign Up'}`
                 }
@@ -479,8 +479,8 @@ const LoginSignup = () => {
                   disabled={resendCooldown > 0 || isLoading}
                   className="resend-btn"
                 >
-                  {resendCooldown > 0 
-                    ? `Resend in ${resendCooldown}s` 
+                  {resendCooldown > 0
+                    ? `Resend in ${resendCooldown}s`
                     : 'Resend Code'
                   }
                 </button>
