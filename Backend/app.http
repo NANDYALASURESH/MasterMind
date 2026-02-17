@@ -1,11 +1,11 @@
 ### 📝 Register a New User
-POST https://mastermind-wfnw.onrender.com/users
+POST https://master-mind-green.vercel.app/api/users
 Content-Type: application/json
 
 {
   "username": "suresh123",
   "name": "Nandyala Suresh",
-  "email": "suresh@example.com",
+  "email": "nandhyalasuresh143@gmail.com",
   "password": "Secret123!"
 }
 
