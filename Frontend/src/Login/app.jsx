@@ -156,24 +156,22 @@ const LoginSignup = () => {
           setError(res.data.message || 'Login failed');
         }
       } else {
-        const res = await axios.post(`${import.meta.env.VITE_API_URL}/users`, {
+        const response = await axios.post(`${import.meta.env.VITE_API_URL}/users`, {
           username: formData.username,
           name: formData.name,
           email: formData.email,
           password: formData.password,
         });
 
-        if (res.data.success && res.data.requiresOTP) {
-          setOtpData(prev => ({
-            ...prev,
-            otpKey: res.data.otpKey,
-            timeLeft: 300,
-            otp: ['', '', '', '', '', '']
-          }));
-          setShowOTPScreen(true);
-        } else {
-          setError(res.data.message || 'Signup failed');
-        }
+        alert(response.data.message || 'Signup successful! Please login.');
+
+        setFormData({
+          username: '',
+          email: '',
+          password: '',
+          name: '',
+        });
+        setIsLogin(true);
       }
     } catch (err) {
       setError(err.response?.data?.message ||
