@@ -113,195 +113,77 @@ const getUserByUsername = (username) => {
 // npm install nodemailer crypto
 
 
-// Configure email transporter (example with Gmail)
+// Configure email transporter
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'nandhyalasuresh143@gmail.com', // your email
-    pass: 'tmbk axpe yxmd agld'  // your app password
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
   }
 });
 
-// Store OTPs temporarily (in production, use Redis or database)
-const otpStore = new Map();
+// ...
 
-console.log(otpStore, "otpStore")
-
-// Generate 6-digit OTP
-function generateOTP() {
-  return crypto.randomInt(100000, 999999).toString();
-}
-
-// Send OTP via email
+// Send OTP via email (Enhanced Template)
 async function sendOTPEmail(email, otp, username) {
   const mailOptions = {
-    from: 'nandhyalasuresh143@gmail.com',
+    from: `"MasterLearn Team" <${process.env.EMAIL_USER}>`,
     to: email,
-    subject: 'MasterLearn - Login OTP',
+    subject: '🔐 Your Login Verification Code',
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2 style="color: #667eea;">MasterLearn Login Verification</h2>
-        <p>Hello ${username},</p>
-        <p>Your OTP for login is:</p>
-        <div style="background: #f8fafc; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
-          <h1 style="color: #667eea; font-size: 32px; margin: 0; letter-spacing: 5px;">${otp}</h1>
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; margin: 0; padding: 0; }
+          .container { max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden; }
+          .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; color: white; }
+          .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+          .content { padding: 40px 30px; text-align: center; color: #333; }
+          .greeting { font-size: 18px; margin-bottom: 20px; color: #555; }
+          .otp-box { background: #f0f4ff; border: 2px dashed #667eea; border-radius: 12px; padding: 20px; margin: 30px 0; display: inline-block; }
+          .otp-code { font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #667eea; margin: 0; font-family: 'Courier New', monospace; }
+          .footer { background-color: #f9fafb; padding: 20px; text-align: center; font-size: 12px; color: #888; border-top: 1px solid #eee; }
+          .warning { color: #e53e3e; font-size: 14px; margin-top: 20px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>MasterLearn</h1>
+          </div>
+          <div class="content">
+            <p class="greeting">Hello, <strong>${username}</strong> 👋</p>
+            <p>You requested a secure login to your account. Use the code below to verify your identity:</p>
+            
+            <div class="otp-box">
+              <h2 class="otp-code">${otp}</h2>
+            </div>
+            
+            <p>This code will expire in <strong>5 minutes</strong>.</p>
+            <p class="warning">If you didn't request this code, please ignore this email or contact support immediately.</p>
+          </div>
+          <div class="footer">
+            <p>&copy; ${new Date().getFullYear()} MasterLearn. All rights reserved.</p>
+            <p>This is an automated message, please do not reply directly.</p>
+          </div>
         </div>
-        <p>This OTP will expire in 5 minutes.</p>
-        <p>If you didn't request this, please ignore this email.</p>
-      </div>
+      </body>
+      </html>
     `
   };
-
   await transporter.sendMail(mailOptions);
 }
 
-// Step 1: Verify credentials and send OTP
-app.post("/api/login", async (req, res) => {
-  const { username, password } = req.body;
-  console.log("Login attempt:", username);
+// ...
 
-  try {
-    const dbUser = await User.findOne({ username }); // Use Mongoose to find user
-    console.log("User from DB:", dbUser);
+const jwtToken = jwt.sign(
+  { username: otpData.username, email: otpData.email },
+  process.env.JWT_SECRET,
+  { expiresIn: "24h" }
+);
 
-    if (!dbUser) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid credentials"
-      });
-    }
-
-    if (!password || !dbUser.password) {
-      return res.status(400).json({
-        success: false,
-        message: "Password data missing"
-      });
-    }
-
-    const isPasswordMatched = await bcrypt.compare(password, dbUser.password);
-
-    if (isPasswordMatched) {
-      // Generate and store OTP
-      const otp = generateOTP();
-      const otpKey = `${username}_${Date.now()}`;
-      console.log("OTP:", otp);
-
-      // Store OTP with expiration (5 minutes)
-      otpStore.set(otpKey, {
-        otp,
-        username,
-        email: dbUser.email,
-        timestamp: Date.now(),
-        expires: Date.now() + 5 * 60 * 1000 // 5 minutes
-      });
-
-      // Send OTP via email
-      await sendOTPEmail(dbUser.email, otp, dbUser.username);
-
-      // Return success with OTP key (don't send actual OTP)
-      return res.json({
-        success: true,
-        message: "OTP sent to your email",
-        otpKey,
-        requiresOTP: true
-      });
-    } else {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid credentials"
-      });
-    }
-  } catch (err) {
-    console.error("Login error:", err);
-    res.status(500).json({
-      success: false,
-      message: "Internal Server Error"
-    });
-  }
-});
-
-app.post("/api/verify-otp", async (req, res) => {
-  const { otpKey, otp } = req.body;
-
-  try {
-    if (!otpKey || !otp) {
-      return res.status(400).json({ success: false, message: "OTP and key are required" });
-    }
-
-    const otpData = otpStore.get(otpKey);
-    if (!otpData) return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
-
-    if (Date.now() > otpData.expires) {
-      otpStore.delete(otpKey);
-      return res.status(400).json({ success: false, message: "OTP has expired" });
-    }
-
-    if (otpData.otp !== otp.trim()) {
-      return res.status(400).json({ success: false, message: "Invalid OTP" });
-    }
-
-    const jwtToken = jwt.sign(
-      { username: otpData.username, email: otpData.email },
-      "MY_SECRET_TOKEN",
-      { expiresIn: "24h" }
-    );
-
-    otpStore.delete(otpKey);
-
-    return res.json({
-      success: true,
-      message: "Login successful",
-      token: jwtToken // send token to frontend
-    });
-
-  } catch (err) {
-    console.error("OTP verification error:", err);
-    res.status(500).json({ success: false, message: "Internal Server Error" });
-  }
-});
-
-// Optional: Resend OTP endpoint
-app.post("/api/resend-otp", async (req, res) => {
-  const { otpKey } = req.body;
-
-  try {
-    const otpData = otpStore.get(otpKey);
-
-    if (!otpData) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid OTP session"
-      });
-    }
-
-    // Generate new OTP
-    const newOtp = generateOTP();
-
-    // Update stored OTP data
-    otpStore.set(otpKey, {
-      ...otpData,
-      otp: newOtp,
-      timestamp: Date.now(),
-      expires: Date.now() + 5 * 60 * 1000
-    });
-
-    // Send new OTP
-    await sendOTPEmail(otpData.email, newOtp, otpData.username);
-
-    return res.json({
-      success: true,
-      message: "New OTP sent to your email"
-    });
-
-  } catch (err) {
-    console.error("Resend OTP error:", err);
-    res.status(500).json({
-      success: false,
-      message: "Failed to resend OTP"
-    });
-  }
-});
-
+// ...
 
 // Middleware to authenticate and extract user from JWT
 function authenticateToken(req, res, next) {
@@ -310,7 +192,7 @@ function authenticateToken(req, res, next) {
   if (!token) return res.status(401).json({ message: "Authentication token missing." });
 
   try {
-    const decoded = jwt.verify(token, "MY_SECRET_TOKEN");
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();
   } catch (err) {
@@ -318,80 +200,14 @@ function authenticateToken(req, res, next) {
   }
 }
 
-// Save a course for the logged-in user
-app.post('/api/saved-courses', authenticateToken, async (req, res) => {
-  const username = req.user.username;
-  const { course_id } = req.body;
-  if (!course_id) {
-    return res.status(400).json({ message: 'Course ID is required' });
-  }
-  try {
-    const savedCourse = new SavedCourse({
-      username,
-      course_id
-    });
-    await savedCourse.save();
-    res.json({ message: 'Course saved successfully!' });
-  } catch (err) {
-    if (err.code === 11000) { // Mongoose duplicate key error
-      return res.status(400).json({ message: 'Course already saved' });
-    }
-    console.error("Error saving course:", err);
-    return res.status(500).json({ message: 'Database error' });
-  }
-});
+// ...
 
-// Remove a saved course for the logged-in user
-app.delete('/api/saved-courses', authenticateToken, async (req, res) => {
-  const username = req.user.username;
-  const { course_id } = req.body;
-  if (!course_id) {
-    return res.status(400).json({ message: 'Course ID is required' });
-  }
-  try {
-    const deletedCourse = await SavedCourse.findOneAndDelete({ username, course_id });
-    if (!deletedCourse) {
-      return res.status(404).json({ message: 'Saved course not found' });
-    }
-    res.json({ message: 'Course removed from saved courses' });
-  } catch (err) {
-    console.error("Error deleting saved course:", err);
-    return res.status(500).json({ message: 'Database error' });
-  }
-});
-
-// Get all saved courses for the logged-in user
-app.get('/api/saved-courses', authenticateToken, async (req, res) => {
-  const username = req.user.username;
-  try {
-    const savedCourses = await SavedCourse.find({ username }).populate('course_id');
-    const courses = savedCourses.map(sc => sc.course_id);
-    res.json(courses);
-  } catch (err) {
-    console.error("Error fetching saved courses:", err);
-    return res.status(500).json({ message: 'Internal Server Error' });
-  }
-});
-
-
-app.get('/api/profile', (req, res) => {
-  // Check for token in Authorization header first, then cookies
-  let token = req.headers.authorization?.split(' ')[1]; // Bearer token
-  if (!token) {
-    token = req.cookies.jwt_token; // Get token from HttpOnly cookie
-  }
-
-  if (!token) {
-    return res.status(401).json({ message: 'Authentication token missing.' });
-  }
-
-  try {
-    const decoded = jwt.verify(token, 'MY_SECRET_TOKEN'); // use the same secret as in /login
-    res.json({ user: decoded }); // Example: decoded.email, decoded.name
-  } catch (error) {
-    res.status(403).json({ message: 'Invalid token' });
-  }
-});
+try {
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  res.json({ user: decoded });
+} catch (error) {
+  res.status(403).json({ message: 'Invalid token' });
+}
 
 // ...existing code...
 
