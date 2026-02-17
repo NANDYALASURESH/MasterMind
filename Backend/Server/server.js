@@ -114,12 +114,45 @@ app.get('/api/courses', (req, res) => {
 
 app.post('/api/users', async (req, res) => {
   const { username, name, email, password } = req.body;
+
+  if (!username || !name || !email || !password) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
+
   try {
+    // Check if user already exists
+    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Username or email already exists' });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ username, name, email, password: hashedPassword });
-    await user.save();
-    res.json({ message: 'User registered successfully!' });
-  } catch (err) { res.status(500).json({ message: 'Error' }); }
+    const otp = generateOTP();
+    const otpKey = `signup_${username}_${Date.now()}`;
+
+    // Store pending user data in otpStore
+    otpStore.set(otpKey, {
+      type: 'signup',
+      username,
+      name,
+      email,
+      password: hashedPassword,
+      otp,
+      expires: Date.now() + 5 * 60 * 1000 // 5 minutes
+    });
+
+    await sendOTPEmail(email, otp, name);
+
+    res.json({
+      success: true,
+      message: 'OTP sent to your email',
+      otpKey,
+      requiresOTP: true
+    });
+  } catch (err) {
+    console.error("Signup error:", err);
+    res.status(500).json({ message: 'Server error' });
+  }
 });
 
 app.post("/api/login", async (req, res) => {
@@ -140,12 +173,38 @@ app.post("/api/login", async (req, res) => {
 app.post("/api/verify-otp", async (req, res) => {
   const { otpKey, otp } = req.body;
   const otpData = otpStore.get(otpKey);
-  if (otpData && otpData.otp === otp.trim() && Date.now() < otpData.expires) {
-    const token = jwt.sign({ username: otpData.username, email: otpData.email }, process.env.JWT_SECRET, { expiresIn: "24h" });
+
+  if (!otpData || otpData.otp !== otp.trim() || Date.now() > otpData.expires) {
+    return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+  }
+
+  try {
+    // If it's a signup, create the user now
+    if (otpData.type === 'signup') {
+      const user = new User({
+        username: otpData.username,
+        name: otpData.name,
+        email: otpData.email,
+        password: otpData.password // already hashed
+      });
+      await user.save();
+    }
+
+    const token = jwt.sign(
+      { username: otpData.username, email: otpData.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
     otpStore.delete(otpKey);
     return res.json({ success: true, token });
+  } catch (err) {
+    console.error("OTP Verification Error:", err);
+    if (err.code === 11000) {
+      return res.status(400).json({ success: false, message: "User already registered during verification" });
+    }
+    res.status(500).json({ success: false, message: "Error during verification" });
   }
-  res.status(400).json({ success: false, message: "Invalid OTP" });
 });
 
 function authenticateToken(req, res, next) {
