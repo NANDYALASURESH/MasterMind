@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 3000;
 
 
 app.use(cors({
-  origin: 'https://master-mind-lovat.vercel.app',  // your frontend domain
+  origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Allow env var or local frontend
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,  // allow cookies, auth headers, etc.
 }));
@@ -63,7 +63,7 @@ const SavedCourse = mongoose.model('SavedCourse', savedCourseSchema);
 
 
 // Fetch all courses
-app.get('/courses', (req, res) => {
+app.get('/api/courses', (req, res) => {
   Course.find({})
     .then(courses => {
       res.json(courses);
@@ -76,7 +76,7 @@ app.get('/courses', (req, res) => {
 
 
 // Signup endpoint
-app.post('/users', async (req, res) => {
+app.post('/api/users', async (req, res) => {
   const { username, name, email, password } = req.body;
 
   if (!username || !name || !email || !password) {
@@ -156,7 +156,7 @@ async function sendOTPEmail(email, otp, username) {
 }
 
 // Step 1: Verify credentials and send OTP
-app.post("/login", async (req, res) => {
+app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
   console.log("Login attempt:", username);
 
@@ -220,7 +220,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.post("/verify-otp", async (req, res) => {
+app.post("/api/verify-otp", async (req, res) => {
   const { otpKey, otp } = req.body;
 
   try {
@@ -261,7 +261,7 @@ app.post("/verify-otp", async (req, res) => {
 });
 
 // Optional: Resend OTP endpoint
-app.post("/resend-otp", async (req, res) => {
+app.post("/api/resend-otp", async (req, res) => {
   const { otpKey } = req.body;
 
   try {
@@ -319,7 +319,7 @@ function authenticateToken(req, res, next) {
 }
 
 // Save a course for the logged-in user
-app.post('/saved-courses', authenticateToken, async (req, res) => {
+app.post('/api/saved-courses', authenticateToken, async (req, res) => {
   const username = req.user.username;
   const { course_id } = req.body;
   if (!course_id) {
@@ -342,7 +342,7 @@ app.post('/saved-courses', authenticateToken, async (req, res) => {
 });
 
 // Remove a saved course for the logged-in user
-app.delete('/saved-courses', authenticateToken, async (req, res) => {
+app.delete('/api/saved-courses', authenticateToken, async (req, res) => {
   const username = req.user.username;
   const { course_id } = req.body;
   if (!course_id) {
@@ -361,7 +361,7 @@ app.delete('/saved-courses', authenticateToken, async (req, res) => {
 });
 
 // Get all saved courses for the logged-in user
-app.get('/saved-courses', authenticateToken, async (req, res) => {
+app.get('/api/saved-courses', authenticateToken, async (req, res) => {
   const username = req.user.username;
   try {
     const savedCourses = await SavedCourse.find({ username }).populate('course_id');
@@ -374,7 +374,7 @@ app.get('/saved-courses', authenticateToken, async (req, res) => {
 });
 
 
-app.get('/profile', (req, res) => {
+app.get('/api/profile', (req, res) => {
   // Check for token in Authorization header first, then cookies
   let token = req.headers.authorization?.split(' ')[1]; // Bearer token
   if (!token) {
